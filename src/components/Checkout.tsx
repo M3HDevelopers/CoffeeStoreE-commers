@@ -11,17 +11,8 @@ const Checkout: React.FC<CheckoutProps> = ({ items, onClose, onComplete }) => {
   const [step, setStep] = useState<'form' | 'processing' | 'success'>('form');
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubscription, setIsSubscription] = useState(false);
-  const [subscriptionFrequency, setSubscriptionFrequency] = useState('monthly');
-  const [formData, setFormData] = useState({
-    email: '',
-    name: '',
-    address: '',
-    city: '',
-    zip: '',
-    cardNumber: '',
-    expiry: '',
-    cvv: ''
-  });
+  const [frequency, setFrequency] = useState('monthly');
+  const [formData, setFormData] = useState({ email: '', name: '', address: '', city: '', zip: '', card: '', expiry: '', cvv: '' });
 
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const shipping = subtotal > 35 ? 0 : 5.99;
@@ -31,76 +22,56 @@ const Checkout: React.FC<CheckoutProps> = ({ items, onClose, onComplete }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStep('processing');
-    setTimeout(() => {
-      setStep('success');
-    }, 2500);
+    setTimeout(() => setStep('success'), 2000);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const nextStep = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
   if (step === 'success') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onComplete}>
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center" onClick={(e) => e.stopPropagation()}>
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-20" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
-              <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
+        <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
+        <div className="relative rounded-2xl max-w-sm w-full p-8 text-center" style={{ backgroundColor: 'var(--bg-canvas)', boxShadow: 'var(--shadow-xl)' }} onClick={e => e.stopPropagation()}>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ backgroundColor: 'var(--accent-muted)' }}>
+            <svg className="w-6 h-6" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-          <h2 className="text-2xl font-bold text-stone-800 mb-2">Order Confirmed!</h2>
-          <p className="text-stone-500 mb-1">Thank you for your order.</p>
-          <p className="text-sm text-stone-400 mb-6">
-            Order #EB-{Math.random().toString(36).substring(2, 8).toUpperCase()}
+          <h2 className="text-lg font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>Order confirmed</h2>
+          <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Thank you for your order.</p>
+          <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>
+            Confirmation #{Math.random().toString(36).substring(2, 8).toUpperCase()}
           </p>
           {isSubscription && (
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4 text-left">
-              <p className="text-xs text-amber-800 font-semibold mb-1">☕ Subscription Active</p>
-              <p className="text-xs text-amber-700">You'll receive this coffee every {subscriptionFrequency}. Save 15% on every order!</p>
+            <div className="rounded-lg p-3 mb-4 text-left" style={{ backgroundColor: 'var(--accent-muted)', border: '1px solid var(--border-subtle)' }}>
+              <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Subscription active</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Delivered every {frequency}. 15% discount applied.</p>
             </div>
           )}
-          <div className="bg-stone-50 rounded-xl p-4 mb-6 text-left">
-            <div className="space-y-2">
+          <div className="rounded-lg p-4 mb-6 text-left" style={{ backgroundColor: 'var(--bg-muted)' }}>
+            <div className="space-y-1.5">
               {items.map(item => (
-                <div key={item.product.id} className="flex justify-between text-sm">
-                  <span className="text-stone-600">{item.product.name} × {item.quantity}</span>
-                  <span className="text-stone-800 font-medium">${(item.product.price * item.quantity).toFixed(2)}</span>
+                <div key={item.product.id} className="flex justify-between text-xs">
+                  <span style={{ color: 'var(--text-secondary)' }}>{item.product.name} x{item.quantity}</span>
+                  <span className="tabular-nums" style={{ color: 'var(--text-primary)' }}>${(item.product.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
               {isSubscription && (
-                <div className="flex justify-between text-sm text-green-700">
-                  <span>Subscription discount (15%)</span>
-                  <span className="font-medium">-${discount.toFixed(2)}</span>
+                <div className="flex justify-between text-xs">
+                  <span style={{ color: 'var(--accent)' }}>Subscription discount</span>
+                  <span className="tabular-nums" style={{ color: 'var(--accent)' }}>-${discount.toFixed(2)}</span>
                 </div>
               )}
-              <div className="border-t border-stone-200 pt-2 mt-2 flex justify-between font-bold text-stone-800">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+              <div className="flex justify-between text-sm font-semibold pt-2 mt-2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-primary)' }}>Total</span>
+                <span className="tabular-nums" style={{ color: 'var(--text-primary)' }}>${total.toFixed(2)}</span>
               </div>
             </div>
           </div>
-          <button
-            onClick={onComplete}
-            className="w-full py-3 bg-gradient-to-r from-amber-800 to-amber-700 text-white font-bold rounded-xl hover:from-amber-900 hover:to-amber-800 transition-all shadow-lg"
-          >
-            Continue Shopping
+          <button onClick={onComplete} className="w-full h-10 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>
+            Continue shopping
           </button>
         </div>
       </div>
@@ -110,14 +81,11 @@ const Checkout: React.FC<CheckoutProps> = ({ items, onClose, onComplete }) => {
   if (step === 'processing') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div className="relative bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center">
-          <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-amber-200 rounded-full" />
-            <div className="absolute inset-0 border-4 border-amber-700 border-t-transparent rounded-full animate-spin" />
-          </div>
-          <h2 className="text-xl font-bold text-stone-800 mb-2">Processing Payment</h2>
-          <p className="text-stone-500 text-sm">Please wait while we process your order...</p>
+        <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
+        <div className="relative rounded-2xl max-w-xs w-full p-8 text-center" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+          <div className="w-10 h-10 rounded-full mx-auto mb-4" style={{ border: '2px solid var(--border-subtle)', borderTopColor: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
+          <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Processing payment</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Please wait...</p>
         </div>
       </div>
     );
@@ -125,46 +93,29 @@ const Checkout: React.FC<CheckoutProps> = ({ items, onClose, onComplete }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div
-        className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header with Steps */}
-        <div className="sticky top-0 bg-white rounded-t-3xl border-b border-stone-100 p-6 z-10">
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} />
+      <div className="relative rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-canvas)', boxShadow: 'var(--shadow-xl)' }} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Checkout">
+        
+        {/* Header */}
+        <div className="sticky top-0 z-10 p-6" style={{ backgroundColor: 'var(--bg-canvas)', borderBottom: '1px solid var(--border-subtle)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-stone-800">Checkout</h2>
-            <button
-              onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-stone-100 transition-all hover:rotate-90 duration-300"
-            >
-              <svg className="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Checkout</h2>
+            <button onClick={onClose} className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ color: 'var(--text-secondary)' }} aria-label="Close checkout">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
-          
-          {/* Step Indicator */}
+          {/* Steps */}
           <div className="flex items-center gap-2">
-            {[
-              { num: 1, label: 'Cart' },
-              { num: 2, label: 'Shipping' },
-              { num: 3, label: 'Payment' }
-            ].map((s, i) => (
-              <React.Fragment key={s.num}>
+            {['Cart', 'Shipping', 'Payment'].map((label, i) => (
+              <React.Fragment key={label}>
                 <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                    currentStep >= s.num
-                      ? 'bg-amber-800 text-white'
-                      : 'bg-stone-200 text-stone-500'
-                  }`}>
-                    {currentStep > s.num ? '✓' : s.num}
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+                    style={{ backgroundColor: currentStep > i ? 'var(--accent)' : currentStep === i + 1 ? 'var(--accent)' : 'var(--bg-muted)', color: currentStep >= i + 1 ? 'var(--accent-contrast)' : 'var(--text-muted)' }}>
+                    {currentStep > i + 1 ? '✓' : i + 1}
                   </div>
-                  <span className={`text-xs font-medium hidden sm:block ${currentStep >= s.num ? 'text-stone-800' : 'text-stone-400'}`}>
-                    {s.label}
-                  </span>
+                  <span className="text-xs font-medium hidden sm:block" style={{ color: currentStep >= i + 1 ? 'var(--text-primary)' : 'var(--text-muted)' }}>{label}</span>
                 </div>
-                {i < 2 && <div className={`flex-1 h-0.5 rounded-full ${currentStep > s.num ? 'bg-amber-800' : 'bg-stone-200'}`} />}
+                {i < 2 && <div className="flex-1 h-px" style={{ backgroundColor: currentStep > i + 1 ? 'var(--accent)' : 'var(--border-subtle)' }} />}
               </React.Fragment>
             ))}
           </div>
@@ -174,180 +125,85 @@ const Checkout: React.FC<CheckoutProps> = ({ items, onClose, onComplete }) => {
           {/* Step 1: Cart Review */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <h3 className="font-bold text-stone-800">Review Your Order</h3>
-              
-              {/* Subscription Toggle */}
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
+              {/* Subscription */}
+              <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--accent-muted)', border: '1px solid var(--border-subtle)' }}>
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-bold text-amber-900">Subscribe & Save 15%</span>
-                      <span className="text-[10px] bg-amber-700 text-white px-1.5 py-0.5 rounded-full font-bold">SAVE</span>
-                    </div>
-                    <p className="text-xs text-amber-700">Get fresh coffee delivered regularly. Cancel anytime.</p>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Subscribe and save 15%</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Regular deliveries. Cancel anytime.</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsSubscription(!isSubscription)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${isSubscription ? 'bg-amber-700' : 'bg-stone-300'}`}
-                  >
-                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${isSubscription ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                  <button type="button" onClick={() => setIsSubscription(!isSubscription)} className="relative w-10 h-5 rounded-full transition-colors flex-shrink-0"
+                    style={{ backgroundColor: isSubscription ? 'var(--accent)' : 'var(--border-strong)' }}
+                    role="switch" aria-checked={isSubscription} aria-label="Toggle subscription">
+                    <div className="absolute top-0.5 w-4 h-4 rounded-full transition-transform" style={{ backgroundColor: 'var(--accent-contrast)', transform: isSubscription ? 'translateX(22px)' : 'translateX(2px)' }} />
                   </button>
                 </div>
                 {isSubscription && (
-                  <div className="mt-3 pt-3 border-t border-amber-200">
-                    <label className="text-xs font-semibold text-amber-800 mb-2 block">Delivery frequency:</label>
-                    <div className="flex gap-2">
-                      {['weekly', 'biweekly', 'monthly'].map(freq => (
-                        <button
-                          key={freq}
-                          type="button"
-                          onClick={() => setSubscriptionFrequency(freq)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
-                            subscriptionFrequency === freq
-                              ? 'bg-amber-800 text-white'
-                              : 'bg-white text-amber-800 border border-amber-200'
-                          }`}
-                        >
-                          {freq}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="mt-3 pt-3 flex gap-1.5" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                    {['weekly', 'biweekly', 'monthly'].map(f => (
+                      <button key={f} type="button" onClick={() => setFrequency(f)} className="px-2.5 py-1 rounded text-xs font-medium capitalize transition-colors"
+                        style={{ backgroundColor: frequency === f ? 'var(--accent)' : 'var(--bg-surface)', color: frequency === f ? 'var(--accent-contrast)' : 'var(--text-secondary)', border: frequency === f ? 'none' : '1px solid var(--border-default)' }}>
+                        {f}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Order Items */}
-              <div className="space-y-3">
+              {/* Items */}
+              <div className="space-y-2">
                 {items.map(item => (
-                  <div key={item.product.id} className="flex items-center gap-3 bg-stone-50 rounded-xl p-3">
-                    <img src={item.product.image} alt={item.product.name} className="w-14 h-14 rounded-lg object-cover" />
+                  <div key={item.product.id} className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-muted)' }}>
+                    <img src={item.product.image} alt={item.product.name} className="w-12 h-12 rounded object-cover" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-stone-800 truncate">{item.product.name}</p>
-                      <p className="text-xs text-stone-500">Qty: {item.quantity}</p>
+                      <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{item.product.name}</p>
+                      <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Qty {item.quantity}</p>
                     </div>
-                    <p className="text-sm font-bold text-amber-800">${(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-xs font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>${(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
 
               {/* Summary */}
-              <div className="bg-stone-50 rounded-xl p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
-                </div>
-                {isSubscription && (
-                  <div className="flex justify-between text-sm text-green-700">
-                    <span>Subscription discount</span>
-                    <span className="font-medium">-${discount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-stone-600">Shipping</span>
-                  <span className={shipping === 0 ? 'text-green-600 font-bold' : 'font-medium'}>
-                    {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
-                  </span>
-                </div>
-                <div className="flex justify-between text-base font-bold text-stone-800 pt-2 border-t border-stone-200">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
+              <div className="rounded-lg p-4 space-y-1.5" style={{ backgroundColor: 'var(--bg-muted)' }}>
+                <div className="flex justify-between text-xs"><span style={{ color: 'var(--text-secondary)' }}>Subtotal</span><span className="tabular-nums" style={{ color: 'var(--text-primary)' }}>${subtotal.toFixed(2)}</span></div>
+                {isSubscription && <div className="flex justify-between text-xs"><span style={{ color: 'var(--accent)' }}>Discount (15%)</span><span className="tabular-nums" style={{ color: 'var(--accent)' }}>-${discount.toFixed(2)}</span></div>}
+                <div className="flex justify-between text-xs"><span style={{ color: 'var(--text-secondary)' }}>Shipping</span><span className="tabular-nums" style={{ color: shipping === 0 ? 'var(--accent)' : 'var(--text-primary)' }}>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span></div>
+                <div className="flex justify-between text-sm font-semibold pt-2 mt-1" style={{ borderTop: '1px solid var(--border-subtle)' }}><span style={{ color: 'var(--text-primary)' }}>Total</span><span className="tabular-nums" style={{ color: 'var(--text-primary)' }}>${total.toFixed(2)}</span></div>
               </div>
 
-              <button
-                type="button"
-                onClick={nextStep}
-                className="w-full py-3 bg-gradient-to-r from-amber-800 to-amber-700 text-white font-bold rounded-xl hover:from-amber-900 hover:to-amber-800 transition-all shadow-lg"
-              >
-                Continue to Shipping
-              </button>
+              <button type="button" onClick={() => setCurrentStep(2)} className="w-full h-10 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>Continue to shipping</button>
             </div>
           )}
 
           {/* Step 2: Shipping */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <h3 className="font-bold text-stone-800">Shipping Information</h3>
-              <div className="space-y-3">
+              <div>
+                <label htmlFor="checkout-email" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Email</label>
+                <input id="checkout-email" type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="you@example.com" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
+              </div>
+              <div>
+                <label htmlFor="checkout-name" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Full name</label>
+                <input id="checkout-name" type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Jane Doe" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
+              </div>
+              <div>
+                <label htmlFor="checkout-address" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Address</label>
+                <input id="checkout-address" type="text" name="address" value={formData.address} onChange={handleChange} required placeholder="123 Coffee St" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-stone-600 mb-1 block">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                  />
+                  <label htmlFor="checkout-city" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>City</label>
+                  <input id="checkout-city" type="text" name="city" value={formData.city} onChange={handleChange} required placeholder="Seattle" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-stone-600 mb-1 block">Full Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-stone-600 mb-1 block">Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    placeholder="123 Coffee Street"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-stone-600 mb-1 block">City</label>
-                    <input
-                      type="text"
-                      name="city"
-                      placeholder="Seattle"
-                      value={formData.city}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-stone-600 mb-1 block">ZIP Code</label>
-                    <input
-                      type="text"
-                      name="zip"
-                      placeholder="98101"
-                      value={formData.zip}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                    />
-                  </div>
+                  <label htmlFor="checkout-zip" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>ZIP</label>
+                  <input id="checkout-zip" type="text" name="zip" value={formData.zip} onChange={handleChange} required placeholder="98101" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
                 </div>
               </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-6 py-3 border border-stone-200 text-stone-700 font-semibold rounded-xl hover:bg-stone-50 transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="flex-1 py-3 bg-gradient-to-r from-amber-800 to-amber-700 text-white font-bold rounded-xl hover:from-amber-900 hover:to-amber-800 transition-all shadow-lg"
-                >
-                  Continue to Payment
-                </button>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setCurrentStep(1)} className="h-10 px-4 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>Back</button>
+                <button type="button" onClick={() => setCurrentStep(3)} className="flex-1 h-10 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>Continue to payment</button>
               </div>
             </div>
           )}
@@ -355,70 +211,30 @@ const Checkout: React.FC<CheckoutProps> = ({ items, onClose, onComplete }) => {
           {/* Step 3: Payment */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <h3 className="font-bold text-stone-800">Payment Details</h3>
-              <div className="bg-stone-50 rounded-xl p-4 mb-4">
-                <p className="text-xs text-stone-500 mb-2">Order total:</p>
-                <p className="text-2xl font-bold text-amber-800">${total.toFixed(2)}</p>
-                {isSubscription && <p className="text-xs text-green-700 mt-1">✓ 15% subscription discount applied</p>}
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-muted)' }}>
+                <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Order total</p>
+                <p className="text-xl font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>${total.toFixed(2)}</p>
+                {isSubscription && <p className="text-xs mt-1" style={{ color: 'var(--accent)' }}>15% subscription discount applied</p>}
               </div>
-              <div className="space-y-3">
+              <div>
+                <label htmlFor="checkout-card" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Card number</label>
+                <input id="checkout-card" type="text" name="card" value={formData.card} onChange={handleChange} required placeholder="4242 4242 4242 4242" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-stone-600 mb-1 block">Card Number</label>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    placeholder="4242 4242 4242 4242"
-                    value={formData.cardNumber}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                  />
+                  <label htmlFor="checkout-expiry" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Expiry</label>
+                  <input id="checkout-expiry" type="text" name="expiry" value={formData.expiry} onChange={handleChange} required placeholder="MM/YY" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-stone-600 mb-1 block">Expiry</label>
-                    <input
-                      type="text"
-                      name="expiry"
-                      placeholder="MM/YY"
-                      value={formData.expiry}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-stone-600 mb-1 block">CVV</label>
-                    <input
-                      type="text"
-                      name="cvv"
-                      placeholder="123"
-                      value={formData.cvv}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm"
-                    />
-                  </div>
+                <div>
+                  <label htmlFor="checkout-cvv" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>CVV</label>
+                  <input id="checkout-cvv" type="text" name="cvv" value={formData.cvv} onChange={handleChange} required placeholder="123" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }} />
                 </div>
               </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-6 py-3 border border-stone-200 text-stone-700 font-semibold rounded-xl hover:bg-stone-50 transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-gradient-to-r from-amber-800 to-amber-700 text-white font-bold rounded-xl hover:from-amber-900 hover:to-amber-800 transition-all shadow-lg"
-                >
-                  Place Order — ${total.toFixed(2)}
-                </button>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setCurrentStep(2)} className="h-10 px-4 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>Back</button>
+                <button type="submit" className="flex-1 h-10 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>Place order — ${total.toFixed(2)}</button>
               </div>
-              <p className="text-xs text-center text-stone-400">
-                🔒 This is a simulated checkout. No real payment will be processed.
-              </p>
+              <p className="text-[11px] text-center" style={{ color: 'var(--text-muted)' }}>Simulated checkout. No real payment processed.</p>
             </div>
           )}
         </form>

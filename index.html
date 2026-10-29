@@ -1,97 +1,116 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ember & Bloom — Specialty Coffee</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <title>Ember & Bloom — Specialty Coffee Roasters</title>
+    <meta name="description" content="Single-origin and artisan blend specialty coffees, roasted in small batches and shipped within 24 hours. Sourced directly from farms in Ethiopia, Colombia, Kenya, and Indonesia." />
+    <meta name="theme-color" content="#92400e" />
+    <link rel="canonical" href="https://emberandbloom.co" />
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://emberandbloom.co" />
+    <meta property="og:title" content="Ember & Bloom — Specialty Coffee Roasters" />
+    <meta property="og:description" content="Single-origin and artisan blend specialty coffees, roasted in small batches and shipped within 24 hours." />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ember & Bloom — Specialty Coffee Roasters" />
+    <meta name="twitter:description" content="Single-origin and artisan blend specialty coffees, roasted in small batches and shipped within 24 hours." />
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "Ember & Bloom",
+      "description": "Specialty coffee roasters sourcing single-origin beans from the world's finest growing regions.",
+      "url": "https://emberandbloom.co",
+      "priceRange": "$$",
+      "servesCuisine": "Coffee",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Coffee Collection",
+        "itemListElement": [
+          {
+            "@type": "Product",
+            "name": "Ethiopian Yirgacheffe",
+            "description": "Single-origin light roast from Ethiopia with blueberry, jasmine, and lemon zest notes.",
+            "offers": {
+              "@type": "Offer",
+              "price": "18.50",
+              "priceCurrency": "USD"
+            }
+          },
+          {
+            "@type": "Product",
+            "name": "Colombian Supremo",
+            "description": "Medium roast single-origin from Colombia with caramel, red apple, and milk chocolate notes.",
+            "offers": {
+              "@type": "Offer",
+              "price": "16.00",
+              "priceCurrency": "USD"
+            }
+          }
+        ]
+      }
+    }
+    </script>
+
     <style>
-      /* 内联样式确保主题色立即生效，避免闪烁 */
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-      }
-      html.light,
-      html.light body {
-        background-color: #ffffff !important;
-        color: #000000;
-      }
-      html.dark,
-      html.dark body {
-        background-color: #1a1a1a !important;
-        color: #ffffff;
-      }
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+      html, html body { background-color: #fafaf9 !important; color: #1c1917; }
+      html[data-theme="dark"], html[data-theme="dark"] body { background-color: #0c0a09 !important; color: #fafaf9; }
     </style>
     <script>
-      // 在 React 加载前立即设置主题，避免闪烁
       (function () {
         const isInIframe = window.self !== window.top;
-
         function applyThemeToDOM(theme) {
           document.documentElement.classList.remove("light", "dark");
           document.documentElement.classList.add(theme);
           document.documentElement.setAttribute("data-theme", theme);
         }
-
         if (isInIframe) {
-          // 监听父窗口主动推送的主题消息
           window.addEventListener("message", function (event) {
             if (event.data && typeof event.data.theme === "string") {
               const theme = event.data.theme;
-              if (theme === "light" || theme === "dark") {
-                applyThemeToDOM(theme);
-              }
+              if (theme === "light" || theme === "dark") applyThemeToDOM(theme);
             }
           });
         } else {
-          // 非 iframe 环境，使用默认 light 主题
-          applyThemeToDOM("light");
+          const saved = localStorage.getItem("ember-theme");
+          applyThemeToDOM(saved === "dark" ? "dark" : "light");
         }
       })();
     </script>
-      <script>
+    <script>
       (function () {
         if (window.self === window.top) return;
         var reported = {};
         window.addEventListener("error", function (event) {
-          // 资源加载失败的 error 事件没有 message，此处仅上报 JS 运行时错误
           if (!event || !event.message) return;
-          var key =
-            event.message + "|" + (event.filename || "") + "|" + (event.lineno || 0);
-          if (reported[key]) return; // 相同错误只上报一次，避免渲染循环刷屏
+          var key = event.message + "|" + (event.filename || "") + "|" + (event.lineno || 0);
+          if (reported[key]) return;
           reported[key] = true;
           try {
-            window.parent.postMessage(
-              {
-                type: "sandbox-runtime-error",
-                payload: {
-                  message: String(event.message).slice(0, 500),
-                  filename: event.filename || "",
-                  lineno: event.lineno || 0,
-                  colno: event.colno || 0,
-                  stack:
-                    event.error && event.error.stack
-                      ? String(event.error.stack).slice(0, 2000)
-                      : ""
-                }
-              },
-              "*"
-            );
-          } catch (e) {
-            /* 上报失败不影响页面运行 */
-          }
+            window.parent.postMessage({
+              type: "sandbox-runtime-error",
+              payload: {
+                message: String(event.message).slice(0, 500),
+                filename: event.filename || "",
+                lineno: event.lineno || 0,
+                colno: event.colno || 0,
+                stack: event.error && event.error.stack ? String(event.error.stack).slice(0, 2000) : ""
+              }
+            }, "*");
+          } catch (e) {}
         });
       })();
     </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { products, categories, roastLevels, sortOptions, Product } from './data/products';
 import { CartItem, WishlistItem } from './types/cart';
 import ProductCard from './components/ProductCard';
@@ -18,12 +18,25 @@ function App() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
+  useEffect(() => {
+    const saved = localStorage.getItem('ember-theme');
+    if (saved === 'dark') {
+      setIsDark(true);
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }, []);
 
-  // Filter and sort products
+  const toggleTheme = useCallback(() => {
+    setIsDark(prev => {
+      const next = !prev;
+      document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
+      localStorage.setItem('ember-theme', next ? 'dark' : 'light');
+      return next;
+    });
+  }, []);
+
   const filteredProducts = useMemo(() => {
     let result = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -34,27 +47,13 @@ function App() {
       return matchesSearch && matchesCategory && matchesRoast;
     });
 
-    // Sort
     switch (sortBy) {
-      case 'price-low':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'name':
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'newest':
-        result.sort((a, b) => (b.newArrival ? 1 : 0) - (a.newArrival ? 1 : 0));
-        break;
-      default:
-        result.sort((a, b) => (b.bestSeller ? 1 : 0) - (a.bestSeller ? 1 : 0));
+      case 'price-low': result.sort((a, b) => a.price - b.price); break;
+      case 'price-high': result.sort((a, b) => b.price - a.price); break;
+      case 'rating': result.sort((a, b) => b.rating - a.rating); break;
+      case 'name': result.sort((a, b) => a.name.localeCompare(b.name)); break;
+      default: result.sort((a, b) => (b.bestSeller ? 1 : 0) - (a.bestSeller ? 1 : 0));
     }
-
     return result;
   }, [searchQuery, selectedCategory, selectedRoast, sortBy]);
 
@@ -71,22 +70,16 @@ function App() {
       const existing = prev.find(item => item.product.id === product.id);
       if (existing) {
         return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
       return [...prev, { product, quantity }];
     });
-    showNotification(`${product.name} added to cart!`);
+    showNotification(`${product.name} added to cart`);
   };
 
   const updateQuantity = (productId: number, quantity: number) => {
-    setCartItems(prev =>
-      prev.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    setCartItems(prev => prev.map(item => item.product.id === productId ? { ...item, quantity } : item));
   };
 
   const removeItem = (productId: number) => {
@@ -97,12 +90,11 @@ function App() {
     setWishlist(prev => {
       const exists = prev.find(item => item.product.id === product.id);
       if (exists) {
-        showNotification(`${product.name} removed from wishlist`);
+        showNotification(`Removed from wishlist`);
         return prev.filter(item => item.product.id !== product.id);
-      } else {
-        showNotification(`${product.name} added to wishlist ♥`);
-        return [...prev, { product, addedAt: Date.now() }];
       }
+      showNotification(`Saved to wishlist`);
+      return [...prev, { product, addedAt: Date.now() }];
     });
   };
 
@@ -116,34 +108,19 @@ function App() {
     });
   };
 
-  const handleCheckout = () => {
-    setIsCartOpen(false);
-    setIsCheckoutOpen(true);
-  };
+  const handleCheckout = () => { setIsCartOpen(false); setIsCheckoutOpen(true); };
+  const handleCheckoutComplete = () => { setIsCheckoutOpen(false); setCartItems([]); showNotification('Order confirmed'); };
 
-  const handleCheckoutComplete = () => {
-    setIsCheckoutOpen(false);
-    setCartItems([]);
-    showNotification('Order placed successfully! 🎉');
-  };
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newsletterEmail) {
-      setNewsletterSubmitted(true);
-      showNotification('Welcome to the Ember & Bloom family! ☕');
-      setTimeout(() => setNewsletterSubmitted(false), 3000);
-      setNewsletterEmail('');
-    }
-  };
+  const featuredProduct = products.find(p => p.bestSeller && p.rating >= 4.8) || products[0];
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      {/* Notification Toast */}
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-canvas)', color: 'var(--text-primary)' }}>
+      {/* Notification */}
       {notification && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] animate-fade-in">
-          <div className="bg-stone-800 text-white px-6 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2">
-            <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60]" style={{ animation: 'fadeIn 0.25s ease-out' }}>
+          <div className="px-5 py-3 rounded-lg text-sm font-medium flex items-center gap-2.5"
+            style={{ backgroundColor: 'var(--bg-surface-raised)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)' }}>
+            <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             {notification}
@@ -151,255 +128,261 @@ function App() {
         </div>
       )}
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-40" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-canvas) 85%, transparent)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border-subtle)' }}>
+        <div className="container-page">
+          <nav className="flex items-center justify-between h-16 md:h-18" aria-label="Main navigation">
             {/* Logo */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-700 to-amber-900 rounded-xl flex items-center justify-center shadow-lg shadow-amber-800/20">
-                <svg className="w-5 h-5 text-amber-100" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M2 21V19H20V21H2ZM20 8V5H22V8C22 9.1 21.55 10.1 20.83 10.83C20.1 11.55 19.1 12 18 12H17.72C17.36 13.77 16.34 15.26 14.88 16.21C13.43 17.16 11.7 17.55 10 17.33C8.3 17.11 6.79 16.29 5.73 15C4.67 13.71 4.13 12.07 4.22 10.41C4.31 8.75 5.02 7.18 6.22 6.02C7.42 4.86 9.02 4.22 10.68 4.22H12V6.5H10.68C9.54 6.5 8.47 6.93 7.64 7.73C6.81 8.53 6.33 9.62 6.28 10.78C6.23 11.94 6.61 13.07 7.34 13.95C8.07 14.83 9.1 15.38 10.22 15.5C11.34 15.62 12.46 15.3 13.34 14.61C14.22 13.92 14.8 12.93 14.95 11.82L15.11 10.5H18C18.57 10.5 19.07 10.29 19.44 9.94C19.81 9.59 20 9.07 20 8.5V8Z"/>
+            <a href="#" className="flex items-center gap-3 group" aria-label="Ember & Bloom home">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
+                <svg className="w-4 h-4" style={{ color: 'var(--accent-contrast)' }} fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-stone-800 leading-tight">Ember & Bloom</h1>
-                <p className="text-[10px] text-stone-400 uppercase tracking-[0.2em] hidden sm:block">Specialty Coffee Roasters</p>
+                <span className="text-base font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>Ember & Bloom</span>
               </div>
-            </div>
+            </a>
 
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
+            {/* Desktop Search */}
+            <div className="hidden md:flex flex-1 max-w-sm mx-8">
               <div className="relative w-full">
-                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
-                  type="text"
-                  placeholder="Search coffees, origins, flavors..."
+                  type="search"
+                  placeholder="Search origins, flavors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-stone-100 rounded-xl border border-transparent focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm text-stone-700 placeholder:text-stone-400"
+                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm transition-colors"
+                  style={{ backgroundColor: 'var(--bg-muted)', color: 'var(--text-primary)', border: '1px solid transparent' }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--border-strong)'}
+                  onBlur={(e) => e.target.style.borderColor = 'transparent'}
                 />
               </div>
             </div>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-2">
-              {/* Wishlist Button */}
+            {/* Actions */}
+            <div className="flex items-center gap-1">
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+              >
+                {isDark ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                )}
+              </button>
+
+              {/* Wishlist */}
               <button
                 onClick={() => setIsWishlistOpen(true)}
-                className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-stone-100 transition-colors"
+                className="w-9 h-9 rounded-lg flex items-center justify-center relative transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                aria-label={`Wishlist, ${wishlistCount} items`}
               >
-                <svg className={`w-5 h-5 ${wishlistCount > 0 ? 'text-red-500 fill-current' : 'text-stone-600'}`} fill={wishlistCount > 0 ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>
                     {wishlistCount}
                   </span>
                 )}
               </button>
 
-              {/* Cart Button */}
+              {/* Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-2 bg-gradient-to-r from-amber-800 to-amber-700 text-white px-4 py-2.5 rounded-xl hover:from-amber-900 hover:to-amber-800 transition-all shadow-md shadow-amber-800/10"
+                className="h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+                aria-label={`Cart, ${cartCount} items`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
-                <span className="text-sm font-semibold hidden sm:inline">Cart</span>
+                <span className="hidden sm:inline">Cart</span>
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-amber-800 text-xs font-bold rounded-full flex items-center justify-center shadow-md border-2 border-amber-800">
+                  <span className="tabular-nums text-xs font-semibold px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>
                     {cartCount}
                   </span>
                 )}
               </button>
             </div>
-          </div>
+          </nav>
 
           {/* Mobile Search */}
           <div className="md:hidden pb-3">
             <div className="relative">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
-                type="text"
-                placeholder="Search coffees..."
+                type="search"
+                placeholder="Search origins, flavors..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-stone-100 rounded-xl border border-transparent focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100 outline-none transition-all text-sm text-stone-700 placeholder:text-stone-400"
+                className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm"
+                style={{ backgroundColor: 'var(--bg-muted)', color: 'var(--text-primary)' }}
               />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-amber-900 via-amber-800 to-stone-900">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
-        </div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 mb-6">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-amber-100 text-xs font-medium">Freshly roasted this week</span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-5 leading-[1.1]">
-              Exceptional Coffee,<br />
-              <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Thoughtfully Sourced</span>
-            </h2>
-            <p className="text-amber-100/80 text-base md:text-lg leading-relaxed mb-8 max-w-lg">
-              Discover our curated selection of single-origin and artisan blend coffees, roasted to perfection and delivered fresh to your door.
-            </p>
-            <div className="flex flex-wrap gap-3 mb-8">
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 text-amber-100 text-sm">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Freshly Roasted
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 text-amber-100 text-sm">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Free Shipping $35+
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 text-amber-100 text-sm">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Subscribe & Save 15%
-              </div>
-            </div>
-            <a href="#products" className="inline-flex items-center gap-2 bg-white text-amber-900 px-6 py-3 rounded-xl font-bold text-sm hover:bg-amber-50 transition-colors shadow-xl">
-              Shop Collection
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="bg-white border-b border-stone-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { value: '50K+', label: 'Happy Customers' },
-              { value: '15+', label: 'Origin Countries' },
-              { value: '4.9★', label: 'Average Rating' },
-              { value: '24h', label: 'Roast to Ship' }
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <p className="text-2xl md:text-3xl font-bold text-amber-800">{stat.value}</p>
-                <p className="text-xs md:text-sm text-stone-500 mt-1">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content */}
-      <main id="products" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {/* Filters & Sort */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+      {/* ── Hero: Asymmetric Bento ── */}
+      <section className="container-page pt-12 md:pt-20 pb-12 md:pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+          {/* Main Feature — Span 8 */}
+          <div className="md:col-span-8 rounded-2xl p-8 md:p-12 flex flex-col justify-between min-h-[380px] relative overflow-hidden"
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
             <div>
-              <h3 className="text-2xl font-bold text-stone-800">Our Collection</h3>
-              <p className="text-stone-500 text-sm mt-0.5">{filteredProducts.length} coffee{filteredProducts.length !== 1 ? 's' : ''} available</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                Roasted in small batches, shipped within 24 hours of roasting.
+              </p>
+              <h2 className="text-3xl md:text-5xl font-serif leading-tight tracking-tight mb-4" style={{ color: 'var(--text-primary)' }}>
+                Coffee from the world's<br />most distinguished origins.
+              </h2>
+              <p className="text-base max-w-md leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Single-origin beans sourced directly from farmers in Ethiopia, Colombia, Kenya, and Indonesia. Each lot is cupped, graded, and roasted to reveal its unique character.
+              </p>
             </div>
-            
-            {/* Sort Dropdown */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-medium text-stone-700 hover:border-amber-300 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-                Filters
-                {(selectedCategory !== 'All' || selectedRoast !== 'All') && (
-                  <span className="w-2 h-2 bg-amber-600 rounded-full" />
-                )}
-              </button>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-medium text-stone-700 focus:border-amber-300 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer"
-              >
-                {sortOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+            <div className="mt-8 flex items-center gap-4">
+              <a href="#collection" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>
+                Shop collection
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+              </a>
+              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>6 origins available</span>
             </div>
           </div>
 
-          {/* Expandable Filters */}
-          {showFilters && (
-            <div className="bg-white rounded-2xl border border-stone-200 p-5 mb-4 space-y-4 animate-fade-in">
-              <div>
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Category</label>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map(category => (
-                    <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                        selectedCategory === category
-                          ? 'bg-amber-800 text-white shadow-md'
-                          : 'bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
+          {/* Featured Product — Span 4 */}
+          <div className="md:col-span-4 rounded-2xl overflow-hidden relative group cursor-pointer"
+            style={{ border: '1px solid var(--border-subtle)' }}
+            onClick={() => viewProduct(featuredProduct)}>
+            <img src={featuredProduct.image} alt={featuredProduct.name} className="w-full h-full min-h-[380px] object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>Featured origin</p>
+              <h3 className="text-lg font-semibold text-white mb-1">{featuredProduct.name}</h3>
+              <div className="flex items-center justify-between">
+                <span className="text-sm tabular-nums" style={{ color: 'rgba(255,255,255,0.8)' }}>${featuredProduct.price.toFixed(2)}</span>
+                <span className="text-xs px-2 py-1 rounded bg-white/20 text-white backdrop-blur-sm">{featuredProduct.roast}</span>
               </div>
-              <div>
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Roast Level</label>
-                <div className="flex flex-wrap gap-2">
-                  {roastLevels.map(roast => (
-                    <button
-                      key={roast}
-                      onClick={() => setSelectedRoast(roast)}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                        selectedRoast === roast
-                          ? 'bg-amber-800 text-white shadow-md'
-                          : 'bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200'
-                      }`}
-                    >
-                      {roast}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {(selectedCategory !== 'All' || selectedRoast !== 'All') && (
-                <button
-                  onClick={() => { setSelectedCategory('All'); setSelectedRoast('All'); }}
-                  className="text-xs text-amber-700 font-medium hover:text-amber-900 flex items-center gap-1"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Clear all filters
-                </button>
-              )}
             </div>
+          </div>
+
+          {/* Stats Row — Span 4 + 4 + 4 */}
+          <div className="md:col-span-4 rounded-xl p-5 flex flex-col justify-between"
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Direct trade partners</p>
+            <p className="text-3xl font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>47</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Farms across 6 countries</p>
+          </div>
+          <div className="md:col-span-4 rounded-xl p-5 flex flex-col justify-between"
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Average cupping score</p>
+            <p className="text-3xl font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>87.4</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>SCA specialty grade (80+)</p>
+          </div>
+          <div className="md:col-span-4 rounded-xl p-5 flex flex-col justify-between"
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Roast to ship</p>
+            <p className="text-3xl font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>&lt;24h</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Peak freshness guaranteed</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Collection ── */}
+      <section id="collection" className="container-page pb-16">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <h3 className="text-2xl md:text-3xl font-serif tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              The collection
+            </h3>
+            <p className="text-sm mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+              {filteredProducts.length} coffee{filteredProducts.length !== 1 ? 's' : ''} from our current roster
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="h-9 px-3 rounded-lg text-sm cursor-pointer"
+              style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+              aria-label="Sort products"
+            >
+              {sortOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+          <div>
+            <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Category</p>
+            <div className="flex gap-1.5">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className="px-3 py-1.5 rounded-md text-sm transition-colors"
+                  style={{
+                    backgroundColor: selectedCategory === cat ? 'var(--accent)' : 'transparent',
+                    color: selectedCategory === cat ? 'var(--accent-contrast)' : 'var(--text-secondary)',
+                    border: selectedCategory === cat ? 'none' : '1px solid var(--border-default)'
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Roast</p>
+            <div className="flex gap-1.5">
+              {roastLevels.map(roast => (
+                <button
+                  key={roast}
+                  onClick={() => setSelectedRoast(roast)}
+                  className="px-3 py-1.5 rounded-md text-sm transition-colors"
+                  style={{
+                    backgroundColor: selectedRoast === roast ? 'var(--accent)' : 'transparent',
+                    color: selectedRoast === roast ? 'var(--accent-contrast)' : 'var(--text-secondary)',
+                    border: selectedRoast === roast ? 'none' : '1px solid var(--border-default)'
+                  }}
+                >
+                  {roast}
+                </button>
+              ))}
+            </div>
+          </div>
+          {(selectedCategory !== 'All' || selectedRoast !== 'All' || searchQuery) && (
+            <button
+              onClick={() => { setSelectedCategory('All'); setSelectedRoast('All'); setSearchQuery(''); }}
+              className="self-end text-sm underline transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Clear filters
+            </button>
           )}
         </div>
 
         {/* Product Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredProducts.map(product => (
               <ProductCard
                 key={product.id}
@@ -413,164 +396,166 @@ function App() {
           </div>
         ) : (
           <div className="text-center py-20">
-            <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <h4 className="text-xl font-bold text-stone-700 mb-2">No coffees found</h4>
-            <p className="text-stone-500 text-sm mb-4">Try adjusting your search or filter criteria</p>
-            <button
-              onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setSelectedRoast('All'); }}
-              className="px-5 py-2.5 bg-amber-800 text-white rounded-xl text-sm font-medium hover:bg-amber-900 transition-colors"
-            >
-              Clear Filters
-            </button>
+            <p className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No results found</p>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Try adjusting your filters or search terms.</p>
           </div>
         )}
 
         {/* Recently Viewed */}
-        {recentlyViewed.length > 0 && (
-          <section className="mt-16">
-            <h3 className="text-xl font-bold text-stone-800 mb-4">Recently Viewed</h3>
-            <div className="flex gap-4 overflow-x-auto pb-2">
+        {recentlyViewed.length > 1 && (
+          <div className="mt-16">
+            <h4 className="text-sm font-medium mb-4" style={{ color: 'var(--text-muted)' }}>Recently viewed</h4>
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {recentlyViewed.map(product => (
                 <button
                   key={product.id}
                   onClick={() => viewProduct(product)}
-                  className="flex-shrink-0 w-40 bg-white rounded-xl border border-stone-100 overflow-hidden hover:shadow-md transition-all text-left"
+                  className="flex-shrink-0 w-36 rounded-xl overflow-hidden text-left transition-colors"
+                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
                 >
-                  <img src={product.image} alt={product.name} className="w-full h-28 object-cover" />
+                  <img src={product.image} alt={product.name} className="w-full h-24 object-cover" />
                   <div className="p-3">
-                    <p className="text-xs font-bold text-stone-800 truncate">{product.name}</p>
-                    <p className="text-xs text-amber-700 font-bold mt-1">${product.price.toFixed(2)}</p>
+                    <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{product.name}</p>
+                    <p className="text-xs tabular-nums mt-1" style={{ color: 'var(--accent)' }}>${product.price.toFixed(2)}</p>
                   </div>
                 </button>
               ))}
             </div>
-          </section>
+          </div>
         )}
-      </main>
-
-      {/* Brewing Guide Section */}
-      <section className="bg-gradient-to-br from-stone-100 to-amber-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h3 className="text-2xl md:text-3xl font-bold text-stone-800 mb-2">The Art of Brewing</h3>
-            <p className="text-stone-500 max-w-md mx-auto">Master your morning ritual with our expert brewing guides</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              { method: 'Pour Over', time: '3-4 min', ratio: '1:16', icon: '☕', desc: 'Clean, bright cup with clarity' },
-              { method: 'French Press', time: '4 min', ratio: '1:15', icon: '🫖', desc: 'Full body, rich and bold' },
-              { method: 'Espresso', time: '25-30 sec', ratio: '1:2', icon: '⚡', desc: 'Intense, concentrated flavor' },
-              { method: 'Cold Brew', time: '12-24 hrs', ratio: '1:8', icon: '🧊', desc: 'Smooth, low acidity, refreshing' }
-            ].map((brew, i) => (
-              <div key={i} className="bg-white rounded-2xl p-5 border border-stone-100 hover:shadow-lg transition-all group">
-                <div className="text-3xl mb-3">{brew.icon}</div>
-                <h4 className="font-bold text-stone-800 mb-1">{brew.method}</h4>
-                <p className="text-xs text-stone-500 mb-3">{brew.desc}</p>
-                <div className="flex gap-3 text-xs">
-                  <span className="text-amber-700 font-semibold">⏱ {brew.time}</span>
-                  <span className="text-stone-400">•</span>
-                  <span className="text-amber-700 font-semibold">⚖ {brew.ratio}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="bg-gradient-to-br from-amber-900 to-stone-900 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5 mb-4">
-              <span className="text-amber-200 text-xs font-medium">☕ Join 50,000+ coffee lovers</span>
-            </div>
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">Get 10% Off Your First Order</h3>
-            <p className="text-amber-100/70 text-sm mb-6">Subscribe for brewing tips, new arrivals, and exclusive offers delivered to your inbox.</p>
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(e) => setNewsletterEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                className="flex-1 px-5 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-amber-200/50 focus:bg-white/20 focus:border-amber-300 outline-none transition-all text-sm"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-white text-amber-900 font-bold rounded-xl hover:bg-amber-50 transition-colors shadow-lg text-sm"
-              >
-                {newsletterSubmitted ? '✓ Subscribed!' : 'Subscribe'}
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-stone-900 text-stone-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-amber-100" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M2 21V19H20V21H2ZM20 8V5H22V8C22 9.1 21.55 10.1 20.83 10.83C20.1 11.55 19.1 12 18 12H17.72C17.36 13.77 16.34 15.26 14.88 16.21C13.43 17.16 11.7 17.55 10 17.33C8.3 17.11 6.79 16.29 5.73 15C4.67 13.71 4.13 12.07 4.22 10.41C4.31 8.75 5.02 7.18 6.22 6.02C7.42 4.86 9.02 4.22 10.68 4.22H12V6.5H10.68C9.54 6.5 8.47 6.93 7.64 7.73C6.81 8.53 6.33 9.62 6.28 10.78C6.23 11.94 6.61 13.07 7.34 13.95C8.07 14.83 9.1 15.38 10.22 15.5C11.34 15.62 12.46 15.3 13.34 14.61C14.22 13.92 14.8 12.93 14.95 11.82L15.11 10.5H18C18.57 10.5 19.07 10.29 19.44 9.94C19.81 9.59 20 9.07 20 8.5V8Z"/>
-                  </svg>
-                </div>
-                <span className="text-white font-bold">Ember & Bloom</span>
-              </div>
-              <p className="text-sm leading-relaxed">Crafting exceptional coffee experiences since 2019. Every bean tells a story of dedication and passion.</p>
-            </div>
+      {/* ── Origin Map Section ── */}
+      <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--bg-surface)' }}>
+        <div className="container-page">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
             <div>
-              <h4 className="text-white font-semibold mb-4 text-sm">Shop</h4>
-              <ul className="space-y-2 text-sm">
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">All Coffee</span></li>
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">Single Origin</span></li>
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">Blends</span></li>
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">Subscriptions</span></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm">Learn</h4>
-              <ul className="space-y-2 text-sm">
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">Brewing Guides</span></li>
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">Our Story</span></li>
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">Sustainability</span></li>
-                <li><span className="hover:text-amber-400 cursor-pointer transition-colors">Blog</span></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm">Contact</h4>
-              <ul className="space-y-2 text-sm">
-                <li>hello@emberandbloom.co</li>
-                <li>+1 (555) 234-5678</li>
-                <li>Mon-Fri: 8am - 6pm EST</li>
-              </ul>
-              <div className="flex gap-3 mt-4">
-                {['instagram', 'twitter', 'facebook'].map(social => (
-                  <span key={social} className="w-8 h-8 bg-stone-800 rounded-lg flex items-center justify-center hover:bg-amber-800 transition-colors cursor-pointer">
-                    <span className="text-xs text-stone-400 capitalize">{social[0].toUpperCase()}</span>
-                  </span>
+              <h3 className="text-2xl md:text-3xl font-serif tracking-tight mb-6" style={{ color: 'var(--text-primary)' }}>
+                Sourced from the coffee belt
+              </h3>
+              <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+                We work directly with farming cooperatives across the equatorial coffee belt — from the highlands of Ethiopia at 2,200 meters to the volcanic soils of Sumatra. Every origin brings distinct terroir to the cup.
+              </p>
+              <div className="space-y-4">
+                {[
+                  { country: 'Ethiopia', region: 'Yirgacheffe, Sidamo', altitude: '1,800–2,200m', process: 'Washed, Natural' },
+                  { country: 'Colombia', region: 'Huila, Nariño', altitude: '1,600–1,900m', process: 'Washed' },
+                  { country: 'Kenya', region: 'Nyeri, Kiambu', altitude: '1,500–2,100m', process: 'Washed' },
+                  { country: 'Indonesia', region: 'Sumatra, Sulawesi', altitude: '1,200–1,700m', process: 'Wet-hulled' },
+                ].map(origin => (
+                  <div key={origin.country} className="flex items-start gap-4 pb-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-semibold"
+                      style={{ backgroundColor: 'var(--accent-muted)', color: 'var(--accent)' }}>
+                      {origin.country[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{origin.country}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{origin.region} · {origin.altitude}</p>
+                    </div>
+                    <p className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{origin.process}</p>
+                  </div>
                 ))}
               </div>
             </div>
+            <div className="rounded-2xl overflow-hidden aspect-square md:aspect-[4/5]"
+              style={{ border: '1px solid var(--border-subtle)' }}>
+              <img
+                src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&h=1000&fit=crop"
+                alt="Freshly roasted coffee beans"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
-          <div className="border-t border-stone-800 mt-10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs">© 2026 Ember & Bloom. All rights reserved.</p>
+        </div>
+      </section>
+
+      {/* ── Brewing Guide ── */}
+      <section className="container-page py-16 md:py-24">
+        <h3 className="text-2xl md:text-3xl font-serif tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>
+          Brewing reference
+        </h3>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
+          Recommended parameters for each method. Adjust to taste.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { method: 'Pour over', time: '3–4 min', ratio: '1:16', temp: '96°C', grind: 'Medium-fine' },
+            { method: 'French press', time: '4 min', ratio: '1:15', temp: '93°C', grind: 'Coarse' },
+            { method: 'Espresso', time: '25–30 sec', ratio: '1:2', temp: '93°C', grind: 'Fine' },
+            { method: 'Cold brew', time: '12–18 hrs', ratio: '1:8', temp: 'Room temp', grind: 'Extra coarse' },
+          ].map(brew => (
+            <div key={brew.method} className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+              <p className="text-sm font-medium mb-4" style={{ color: 'var(--text-primary)' }}>{brew.method}</p>
+              <dl className="space-y-2.5">
+                <div className="flex justify-between text-xs">
+                  <dt style={{ color: 'var(--text-muted)' }}>Time</dt>
+                  <dd className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{brew.time}</dd>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <dt style={{ color: 'var(--text-muted)' }}>Ratio</dt>
+                  <dd className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{brew.ratio}</dd>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <dt style={{ color: 'var(--text-muted)' }}>Temp</dt>
+                  <dd className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{brew.temp}</dd>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <dt style={{ color: 'var(--text-muted)' }}>Grind</dt>
+                  <dd style={{ color: 'var(--text-secondary)' }}>{brew.grind}</dd>
+                </div>
+              </dl>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer style={{ backgroundColor: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)' }}>
+        <div className="container-page py-12 md:py-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="col-span-2 md:col-span-1">
+              <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Ember & Bloom</p>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Specialty coffee roasters. Sourcing exceptional beans from the world's finest growing regions since 2019.
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-muted)' }}>Shop</p>
+              <ul className="space-y-2">
+                {['All coffee', 'Single origin', 'Blends', 'Subscriptions'].map(item => (
+                  <li key={item}><a href="#" className="text-sm transition-colors hover:underline" style={{ color: 'var(--text-secondary)' }}>{item}</a></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-muted)' }}>Learn</p>
+              <ul className="space-y-2">
+                {['Brewing guides', 'Our story', 'Sustainability', 'Wholesale'].map(item => (
+                  <li key={item}><a href="#" className="text-sm transition-colors hover:underline" style={{ color: 'var(--text-secondary)' }}>{item}</a></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-muted)' }}>Contact</p>
+              <ul className="space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <li>hello@emberandbloom.co</li>
+                <li>+1 (555) 234-5678</li>
+                <li>Mon–Fri, 8am–6pm EST</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>© 2026 Ember & Bloom. All rights reserved.</p>
             <div className="flex gap-4 text-xs">
-              <span className="hover:text-amber-400 cursor-pointer transition-colors">Privacy</span>
-              <span className="hover:text-amber-400 cursor-pointer transition-colors">Terms</span>
-              <span className="hover:text-amber-400 cursor-pointer transition-colors">Shipping</span>
+              <a href="#" className="transition-colors hover:underline" style={{ color: 'var(--text-muted)' }}>Privacy</a>
+              <a href="#" className="transition-colors hover:underline" style={{ color: 'var(--text-muted)' }}>Terms</a>
+              <a href="#" className="transition-colors hover:underline" style={{ color: 'var(--text-muted)' }}>Shipping</a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Product Detail Modal */}
+      {/* ── Modals ── */}
       {selectedProduct && (
         <ProductDetail
           product={selectedProduct}
@@ -581,8 +566,6 @@ function App() {
           onViewProduct={viewProduct}
         />
       )}
-
-      {/* Cart Sidebar */}
       <Cart
         items={cartItems}
         isOpen={isCartOpen}
@@ -591,76 +574,40 @@ function App() {
         onRemoveItem={removeItem}
         onCheckout={handleCheckout}
       />
-
-      {/* Wishlist Sidebar */}
       {isWishlistOpen && (
         <div className="fixed inset-0 z-50" onClick={() => setIsWishlistOpen(false)}>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div
-            className="absolute right-0 top-0 h-full w-full max-w-md bg-stone-50 shadow-2xl flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-6 bg-white border-b border-stone-200">
+          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} />
+          <div className="absolute right-0 top-0 h-full w-full max-w-md flex flex-col" style={{ backgroundColor: 'var(--bg-canvas)' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <div>
-                <h2 className="text-xl font-bold text-stone-800">Wishlist</h2>
-                <p className="text-xs text-stone-500 mt-0.5">{wishlistCount} item{wishlistCount !== 1 ? 's' : ''} saved</p>
+                <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Wishlist</h2>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{wishlistCount} saved</p>
               </div>
-              <button
-                onClick={() => setIsWishlistOpen(false)}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 transition-all hover:rotate-90 duration-300"
-              >
-                <svg className="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={() => setIsWishlistOpen(false)} className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ color: 'var(--text-secondary)' }} aria-label="Close wishlist">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6">
               {wishlist.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-red-50 to-pink-50 rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </div>
-                  <p className="text-stone-700 font-bold text-lg mb-1">Your wishlist is empty</p>
-                  <p className="text-stone-500 text-sm mb-6">Save your favorite coffees for later</p>
-                  <button
-                    onClick={() => setIsWishlistOpen(false)}
-                    className="px-6 py-2.5 bg-amber-800 text-white rounded-xl font-medium hover:bg-amber-900 transition-colors shadow-md"
-                  >
-                    Browse Coffee
-                  </button>
+                  <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>No saved items</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tap the heart on any product to save it here.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {wishlist.map(item => (
-                    <div key={item.product.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-100 flex items-center gap-3">
-                      <img src={item.product.image} alt={item.product.name} className="w-16 h-16 rounded-lg object-cover" />
+                    <div key={item.product.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+                      <img src={item.product.image} alt={item.product.name} className="w-14 h-14 rounded-lg object-cover" />
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-stone-800 text-sm truncate">{item.product.name}</h4>
-                        <p className="text-xs text-stone-500">{item.product.origin}</p>
-                        <p className="text-sm font-bold text-amber-800 mt-1">${item.product.price.toFixed(2)}</p>
+                        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{item.product.name}</p>
+                        <p className="text-xs tabular-nums mt-0.5" style={{ color: 'var(--accent)' }}>${item.product.price.toFixed(2)}</p>
                       </div>
-                      <div className="flex flex-col gap-1.5">
-                        <button
-                          onClick={() => addToCart(item.product)}
-                          className="w-8 h-8 bg-amber-800 text-white rounded-lg flex items-center justify-center hover:bg-amber-900 transition-colors"
-                          title="Add to cart"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => toggleWishlist(item.product)}
-                          className="w-8 h-8 bg-stone-100 text-stone-500 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors"
-                          title="Remove"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
+                      <button onClick={() => addToCart(item.product)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }} aria-label="Add to cart">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                      </button>
+                      <button onClick={() => toggleWishlist(item.product)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ color: 'var(--text-muted)' }} aria-label="Remove from wishlist">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -669,14 +616,8 @@ function App() {
           </div>
         </div>
       )}
-
-      {/* Checkout Modal */}
       {isCheckoutOpen && (
-        <Checkout
-          items={cartItems}
-          onClose={() => setIsCheckoutOpen(false)}
-          onComplete={handleCheckoutComplete}
-        />
+        <Checkout items={cartItems} onClose={() => setIsCheckoutOpen(false)} onComplete={handleCheckoutComplete} />
       )}
     </div>
   );
