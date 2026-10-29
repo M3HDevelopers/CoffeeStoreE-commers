@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { products, categories, roastLevels, sortOptions, Product } from './data/products';
 import { CartItem, WishlistItem } from './types/cart';
 import ProductCard from './components/ProductCard';
@@ -19,6 +19,15 @@ function App() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = products.filter(product => {
@@ -112,25 +121,31 @@ function App() {
       )}
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-canvas) 85%, transparent)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border-subtle)' }}>
+      <header
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+        style={{
+          backgroundColor: scrolled ? 'rgba(12, 10, 9, 0.85)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(250, 250, 249, 0.08)' : '1px solid transparent',
+        }}
+      >
         <div className="container-page">
           <nav className="flex items-center justify-between h-16 md:h-18" aria-label="Main navigation">
             {/* Logo */}
             <a href="#" className="flex items-center gap-3 group" aria-label="Ember & Bloom home">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300" style={{ backgroundColor: 'var(--accent)' }}>
                 <svg className="w-4 h-4" style={{ color: 'var(--accent-contrast)' }} fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
-              <div>
-                <span className="text-base font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>Ember & Bloom</span>
-              </div>
+              <span className="text-base font-semibold tracking-tight transition-colors duration-300" style={{ color: '#fafaf9' }}>Ember & Bloom</span>
             </a>
 
             {/* Desktop Search */}
             <div className="hidden md:flex flex-1 max-w-sm mx-8">
               <div className="relative w-full">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-300" style={{ color: scrolled ? 'rgba(250, 250, 249, 0.4)' : 'rgba(250, 250, 249, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
@@ -138,9 +153,13 @@ function App() {
                   placeholder="Search origins, flavors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm transition-colors"
-                  style={{ backgroundColor: 'var(--bg-muted)', color: 'var(--text-primary)', border: '1px solid transparent' }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--border-strong)'}
+                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm transition-all duration-300"
+                  style={{
+                    backgroundColor: scrolled ? 'rgba(250, 250, 249, 0.08)' : 'rgba(250, 250, 249, 0.1)',
+                    color: '#fafaf9',
+                    border: '1px solid transparent'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = 'rgba(250, 250, 249, 0.2)'}
                   onBlur={(e) => e.target.style.borderColor = 'transparent'}
                 />
               </div>
@@ -148,13 +167,11 @@ function App() {
 
             {/* Actions */}
             <div className="flex items-center gap-1">
-
-
               {/* Wishlist */}
               <button
                 onClick={() => setIsWishlistOpen(true)}
-                className="w-9 h-9 rounded-lg flex items-center justify-center relative transition-colors"
-                style={{ color: 'var(--text-secondary)' }}
+                className="w-9 h-9 rounded-lg flex items-center justify-center relative transition-all duration-300 hover:bg-white/10"
+                style={{ color: '#fafaf9' }}
                 aria-label={`Wishlist, ${wishlistCount} items`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,8 +188,12 @@ function App() {
               {/* Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-                style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+                className="h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-all duration-300"
+                style={{
+                  backgroundColor: scrolled ? 'rgba(250, 250, 249, 0.1)' : 'rgba(250, 250, 249, 0.12)',
+                  color: '#fafaf9',
+                  border: '1px solid rgba(250, 250, 249, 0.15)'
+                }}
                 aria-label={`Cart, ${cartCount} items`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,7 +212,7 @@ function App() {
           {/* Mobile Search */}
           <div className="md:hidden pb-3">
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(250, 250, 249, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -200,7 +221,7 @@ function App() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm"
-                style={{ backgroundColor: 'var(--bg-muted)', color: 'var(--text-primary)' }}
+                style={{ backgroundColor: 'rgba(250, 250, 249, 0.1)', color: '#fafaf9' }}
               />
             </div>
           </div>
@@ -208,7 +229,7 @@ function App() {
       </header>
 
       {/* ── Hero Section ── */}
-      <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
+      <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pt-16 md:pt-18">
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
