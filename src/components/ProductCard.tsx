@@ -11,7 +11,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart, isWishlisted, onToggleWishlist }) => {
   return (
-    <article className="tilt-card group rounded-xl overflow-hidden transition-shadow duration-300"
+    <article className="group rounded-xl overflow-hidden transition-shadow duration-300 hover:shadow-xl"
       style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
       
       {/* Image */}

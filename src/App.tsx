@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { products, categories, roastLevels, sortOptions, Product } from './data/products';
 import { CartItem, WishlistItem } from './types/cart';
 import ProductCard from './components/ProductCard';
 import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
-import { useScrollReveal, useParallax } from './hooks/useScrollReveal';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,20 +22,8 @@ function App() {
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const [scrolled, setScrolled] = useState(false);
 
-  // Scroll reveal refs
-  const collectionRef = useScrollReveal(0.1);
-  const featureRef1 = useScrollReveal(0.15);
-  const originRef = useScrollReveal(0.15);
-  const brewingRef = useScrollReveal(0.15);
-  const featureRef2 = useScrollReveal(0.15);
-  const featureRef3 = useScrollReveal(0.15);
-  const productGridRef = useScrollReveal(0.05);
-  const heroParallaxRef = useParallax(0.4);
-
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -114,13 +102,35 @@ function App() {
   const handleCheckout = () => { setIsCartOpen(false); setIsCheckoutOpen(true); };
   const handleCheckoutComplete = () => { setIsCheckoutOpen(false); setCartItems([]); showNotification('Order confirmed'); };
 
-  const featuredProduct = products.find(p => p.bestSeller && p.rating >= 4.8) || products[0];
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+    }
+  };
+
+  const staggerItem = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-canvas)', color: 'var(--text-primary)' }}>
       {/* Notification */}
       {notification && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60]" style={{ animation: 'fadeIn 0.25s ease-out' }}>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-[60]"
+        >
           <div className="px-5 py-3 rounded-lg text-sm font-medium flex items-center gap-2.5"
             style={{ backgroundColor: 'var(--bg-surface-raised)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)' }}>
             <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +138,7 @@ function App() {
             </svg>
             {notification}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Header ── */}
@@ -143,20 +153,18 @@ function App() {
       >
         <div className="container-page">
           <nav className="flex items-center justify-between h-16 md:h-18" aria-label="Main navigation">
-            {/* Logo */}
             <a href="#" className="flex items-center gap-3 group" aria-label="Ember & Bloom home">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300" style={{ backgroundColor: 'var(--accent)' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
                 <svg className="w-4 h-4" style={{ color: 'var(--accent-contrast)' }} fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
-              <span className="text-base font-semibold tracking-tight transition-colors duration-300" style={{ color: '#fafaf9' }}>Ember & Bloom</span>
+              <span className="text-base font-semibold tracking-tight" style={{ color: '#fafaf9' }}>Ember & Bloom</span>
             </a>
 
-            {/* Desktop Search */}
             <div className="hidden md:flex flex-1 max-w-sm mx-8">
               <div className="relative w-full">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-300" style={{ color: scrolled ? 'rgba(250, 250, 249, 0.4)' : 'rgba(250, 250, 249, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(250, 250, 249, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
@@ -164,24 +172,16 @@ function App() {
                   placeholder="Search origins, flavors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm transition-all duration-300"
-                  style={{
-                    backgroundColor: scrolled ? 'rgba(250, 250, 249, 0.08)' : 'rgba(250, 250, 249, 0.1)',
-                    color: '#fafaf9',
-                    border: '1px solid transparent'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'rgba(250, 250, 249, 0.2)'}
-                  onBlur={(e) => e.target.style.borderColor = 'transparent'}
+                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm"
+                  style={{ backgroundColor: 'rgba(250, 250, 249, 0.1)', color: '#fafaf9', border: '1px solid transparent' }}
                 />
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-1">
-              {/* Wishlist */}
               <button
                 onClick={() => setIsWishlistOpen(true)}
-                className="w-9 h-9 rounded-lg flex items-center justify-center relative transition-all duration-300 hover:bg-white/10"
+                className="w-9 h-9 rounded-lg flex items-center justify-center relative hover:bg-white/10 transition-colors"
                 style={{ color: '#fafaf9' }}
                 aria-label={`Wishlist, ${wishlistCount} items`}
               >
@@ -196,15 +196,11 @@ function App() {
                 )}
               </button>
 
-              {/* Cart */}
-              <button
+              <motion.button
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setIsCartOpen(true)}
-                className="h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-all duration-300"
-                style={{
-                  backgroundColor: scrolled ? 'rgba(250, 250, 249, 0.1)' : 'rgba(250, 250, 249, 0.12)',
-                  color: '#fafaf9',
-                  border: '1px solid rgba(250, 250, 249, 0.15)'
-                }}
+                className="h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium"
+                style={{ backgroundColor: 'rgba(250, 250, 249, 0.1)', color: '#fafaf9', border: '1px solid rgba(250, 250, 249, 0.15)' }}
                 aria-label={`Cart, ${cartCount} items`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,11 +212,10 @@ function App() {
                     {cartCount}
                   </span>
                 )}
-              </button>
+              </motion.button>
             </div>
           </nav>
 
-          {/* Mobile Search */}
           <div className="md:hidden pb-3">
             <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(250, 250, 249, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,48 +236,76 @@ function App() {
 
       {/* ── Hero Section ── */}
       <section className="relative min-h-[700px] md:min-h-screen flex items-center overflow-hidden pt-16 md:pt-18">
-        {/* Background Image with Parallax */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div ref={heroParallaxRef} className="parallax-slow absolute inset-0 scale-110">
-            <img
-              src="https://image.qwenlm.ai/generated-images/e24d72ce-5766-47d8-8942-3fcc48965727/_result.png"
-              alt="Freshly roasted coffee beans"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {/* Dark Overlay */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1920&h=1080&fit=crop"
+            alt="Freshly roasted coffee beans"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0" style={{
             background: 'linear-gradient(135deg, rgba(12, 10, 9, 0.85) 0%, rgba(12, 10, 9, 0.7) 50%, rgba(12, 10, 9, 0.85) 100%)'
           }} />
         </div>
 
-        {/* Content */}
         <div className="container-page relative z-10 py-20 md:py-32">
           <div className="max-w-3xl">
-            <p className="text-sm md:text-base mb-6 uppercase tracking-widest hero-animate hero-animate-delay-1" style={{ color: 'var(--accent)', opacity: 0.9, letterSpacing: '0.1em' }}>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 0.9, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-sm md:text-base mb-6 uppercase tracking-widest"
+              style={{ color: 'var(--accent)', letterSpacing: '0.1em' }}
+            >
               Roasted in small batches, shipped within 24 hours
-            </p>
-            <h1 className="font-serif mb-6 hero-animate hero-animate-delay-2" style={{ color: '#fafaf9' }}>
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="font-serif mb-6"
+              style={{ color: '#fafaf9' }}
+            >
               Coffee from the world's<br />most distinguished origins.
-            </h1>
-            <p className="text-base md:text-lg mb-10 hero-animate hero-animate-delay-3" style={{ color: 'rgba(250, 250, 249, 0.8)', maxWidth: '65ch' }}>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 0.8, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="text-base md:text-lg mb-10"
+              style={{ color: 'rgba(250, 250, 249, 0.8)', maxWidth: '65ch' }}
+            >
               Single-origin beans sourced directly from farmers in Ethiopia, Colombia, Kenya, and Indonesia. Each lot is cupped, graded, and roasted to reveal its unique character.
-            </p>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 hero-animate hero-animate-delay-4">
-              <a href="#collection" className="magnetic-btn inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all hover:scale-105"
-                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-4"
+            >
+              <motion.a
+                href="#collection"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}
+              >
                 Shop collection
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-              </a>
+              </motion.a>
               <span className="text-sm" style={{ color: 'rgba(250, 250, 249, 0.6)' }}>10 origins available</span>
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Stats Bar */}
-        <div className="absolute bottom-0 left-0 right-0" style={{ backgroundColor: 'rgba(12, 10, 9, 0.6)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(250, 250, 249, 0.1)' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1 }}
+          className="absolute bottom-0 left-0 right-0"
+          style={{ backgroundColor: 'rgba(12, 10, 9, 0.6)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(250, 250, 249, 0.1)' }}
+        >
           <div className="container-page">
-            <div className="grid grid-cols-3 gap-4 py-6 stagger-children visible">
+            <div className="grid grid-cols-3 gap-4 py-6">
               <div>
                 <p className="text-xs mb-1" style={{ color: 'rgba(250, 250, 249, 0.6)' }}>Direct trade partners</p>
                 <p className="text-2xl md:text-3xl font-semibold tabular-nums" style={{ color: '#fafaf9' }}>47</p>
@@ -297,7 +320,7 @@ function App() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── Marquee Section ── */}
@@ -319,34 +342,34 @@ function App() {
       </section>
 
       {/* ── Collection ── */}
-      <section id="collection" ref={collectionRef} className="container-page pt-12 pb-16 reveal">
-        {/* Section Header */}
+      <motion.section
+        id="collection"
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="container-page pt-12 pb-16"
+      >
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h2 className="font-serif" style={{ color: 'var(--text-primary)' }}>
-              The collection
-            </h2>
+            <h2 className="font-serif" style={{ color: 'var(--text-primary)' }}>The collection</h2>
             <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
               {filteredProducts.length} coffee{filteredProducts.length !== 1 ? 's' : ''} from our current roster
             </p>
           </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="h-9 px-3 rounded-lg text-sm cursor-pointer"
-              style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
-              aria-label="Sort products"
-            >
-              {sortOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="h-9 px-3 rounded-lg text-sm cursor-pointer"
+            style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+            aria-label="Sort products"
+          >
+            {sortOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           <div>
             <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Category</p>
@@ -386,71 +409,49 @@ function App() {
               ))}
             </div>
           </div>
-          {(selectedCategory !== 'All' || selectedRoast !== 'All' || searchQuery) && (
-            <button
-              onClick={() => { setSelectedCategory('All'); setSelectedRoast('All'); setSearchQuery(''); }}
-              className="self-end text-sm underline transition-colors"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Clear filters
-            </button>
-          )}
         </div>
 
-        {/* Product Grid */}
         {filteredProducts.length > 0 ? (
-          <div ref={productGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+          >
             {filteredProducts.map(product => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onViewDetails={viewProduct}
-                onAddToCart={(p) => addToCart(p)}
-                isWishlisted={isWishlisted(product.id)}
-                onToggleWishlist={toggleWishlist}
-              />
+              <motion.div key={product.id} variants={staggerItem}>
+                <ProductCard
+                  product={product}
+                  onViewDetails={viewProduct}
+                  onAddToCart={(p) => addToCart(p)}
+                  isWishlisted={isWishlisted(product.id)}
+                  onToggleWishlist={toggleWishlist}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <div className="text-center py-20">
             <p className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No results found</p>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Try adjusting your filters or search terms.</p>
           </div>
         )}
-
-        {/* Recently Viewed */}
-        {recentlyViewed.length > 1 && (
-          <div className="mt-16">
-            <h4 className="text-sm font-medium mb-4" style={{ color: 'var(--text-muted)' }}>Recently viewed</h4>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {recentlyViewed.map(product => (
-                <button
-                  key={product.id}
-                  onClick={() => viewProduct(product)}
-                  className="flex-shrink-0 w-36 rounded-xl overflow-hidden text-left transition-colors"
-                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
-                >
-                  <img src={product.image} alt={product.name} className="w-full h-24 object-cover" />
-                  <div className="p-3">
-                    <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{product.name}</p>
-                    <p className="text-xs tabular-nums mt-1" style={{ color: 'var(--accent)' }}>${product.price.toFixed(2)}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
+      </motion.section>
 
       {/* ── Yellow Feature Section 1 ── */}
-      <section ref={featureRef1} className="container-page py-12 reveal-scale">
+      <motion.section
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="container-page py-12"
+      >
         <div className="rounded-3xl p-8 md:p-12" style={{ backgroundColor: 'var(--accent)' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
               <p className="text-xs mb-3 uppercase tracking-widest" style={{ color: 'var(--accent-contrast)', opacity: 0.8, letterSpacing: '0.1em' }}>Why choose us</p>
-              <h2 className="font-serif mb-4" style={{ color: 'var(--accent-contrast)' }}>
-                Coffee that tells a story
-              </h2>
+              <h2 className="font-serif mb-4" style={{ color: 'var(--accent-contrast)' }}>Coffee that tells a story</h2>
               <p className="text-base md:text-lg mb-6" style={{ color: 'var(--accent-contrast)', opacity: 0.9, maxWidth: '65ch' }}>
                 Every bag of Ember & Bloom coffee carries the legacy of its origin. From the misty highlands of Ethiopia to the volcanic slopes of Indonesia, we source beans that embody the terroir and tradition of their homeland.
               </p>
@@ -477,16 +478,21 @@ function App() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* ── Origin Map Section ── */}
-      <section ref={originRef} className="py-16 md:py-24 reveal" style={{ backgroundColor: 'var(--bg-surface)' }}>
+      {/* ── Origin Section ── */}
+      <motion.section
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="py-16 md:py-24"
+        style={{ backgroundColor: 'var(--bg-surface)' }}
+      >
         <div className="container-page">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
-            <div className="reveal-left">
-              <h2 className="font-serif mb-6" style={{ color: 'var(--text-primary)' }}>
-                Sourced from the coffee belt
-              </h2>
+            <div>
+              <h2 className="font-serif mb-6" style={{ color: 'var(--text-primary)' }}>Sourced from the coffee belt</h2>
               <p className="text-base md:text-lg mb-6" style={{ color: 'var(--text-secondary)', maxWidth: '65ch' }}>
                 We work directly with farming cooperatives across the equatorial coffee belt — from the highlands of Ethiopia at 2,200 meters to the volcanic soils of Sumatra. Every origin brings distinct terroir to the cup.
               </p>
@@ -511,8 +517,7 @@ function App() {
                 ))}
               </div>
             </div>
-            <div className="rounded-2xl overflow-hidden aspect-square md:aspect-[4/5]"
-              style={{ border: '1px solid var(--border-subtle)' }}>
+            <div className="rounded-2xl overflow-hidden aspect-square md:aspect-[4/5]" style={{ border: '1px solid var(--border-subtle)' }}>
               <img
                 src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&h=1000&fit=crop"
                 alt="Freshly roasted coffee beans"
@@ -521,24 +526,32 @@ function App() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── Brewing Guide ── */}
-      <section ref={brewingRef} className="container-page py-16 md:py-24 reveal">
-        <h2 className="font-serif mb-2" style={{ color: 'var(--text-primary)' }}>
-          Brewing reference
-        </h2>
-        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
-          Recommended parameters for each method. Adjust to taste.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
+      <motion.section
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="container-page py-16 md:py-24"
+      >
+        <h2 className="font-serif mb-2" style={{ color: 'var(--text-primary)' }}>Brewing reference</h2>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>Recommended parameters for each method. Adjust to taste.</p>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
           {[
             { method: 'Pour over', time: '3–4 min', ratio: '1:16', temp: '96°C', grind: 'Medium-fine' },
             { method: 'French press', time: '4 min', ratio: '1:15', temp: '93°C', grind: 'Coarse' },
             { method: 'Espresso', time: '25–30 sec', ratio: '1:2', temp: '93°C', grind: 'Fine' },
             { method: 'Cold brew', time: '12–18 hrs', ratio: '1:8', temp: 'Room temp', grind: 'Extra coarse' },
           ].map(brew => (
-            <div key={brew.method} className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <motion.div key={brew.method} variants={staggerItem} className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
               <p className="text-sm font-medium mb-4" style={{ color: 'var(--text-primary)' }}>{brew.method}</p>
               <dl className="space-y-2.5">
                 <div className="flex justify-between text-xs">
@@ -558,21 +571,19 @@ function App() {
                   <dd style={{ color: 'var(--text-secondary)' }}>{brew.grind}</dd>
                 </div>
               </dl>
-            </div>
+            </motion.div>
           ))}
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
-      {/* ── Marquee Section 2: Reverse Direction ── */}
+      {/* ── Marquee Section 2 ── */}
       <section className="py-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
         <div className="marquee-track" style={{ animationDirection: 'reverse', animationDuration: '35s' }}>
           {[...Array(2)].map((_, setIndex) => (
             <div key={setIndex} className="flex items-center gap-6 px-4">
               {['Ethiopia', 'Colombia', 'Kenya', 'Indonesia', 'Brazil', 'Guatemala', 'Costa Rica', 'Sumatra', 'Yirgacheffe', 'Huila', 'Nyeri', 'Mandheling'].map((origin, i) => (
                 <React.Fragment key={i}>
-                  <span className="text-base md:text-lg font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                    {origin}
-                  </span>
+                  <span className="text-base md:text-lg font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{origin}</span>
                   <span className="text-lg" style={{ color: 'var(--accent)' }}>◆</span>
                 </React.Fragment>
               ))}
@@ -581,13 +592,17 @@ function App() {
         </div>
       </section>
 
-      {/* ── Yellow Feature Section 2: Subscription CTA ── */}
-      <section ref={featureRef2} className="container-page py-12 reveal-scale">
+      {/* ── Subscription CTA ── */}
+      <motion.section
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="container-page py-12"
+      >
         <div className="rounded-3xl p-8 md:p-16 text-center" style={{ backgroundColor: 'var(--accent)' }}>
           <p className="text-xs mb-3 uppercase tracking-widest" style={{ color: 'var(--accent-contrast)', opacity: 0.8, letterSpacing: '0.1em' }}>Never run out</p>
-          <h2 className="font-serif mb-4" style={{ color: 'var(--accent-contrast)' }}>
-            Subscribe and save 15%
-          </h2>
+          <h2 className="font-serif mb-4" style={{ color: 'var(--accent-contrast)' }}>Subscribe and save 15%</h2>
           <p className="text-base md:text-lg mb-8 mx-auto" style={{ color: 'var(--accent-contrast)', opacity: 0.9, maxWidth: '65ch' }}>
             Fresh coffee delivered to your door on your schedule. Choose weekly, biweekly, or monthly. Pause or cancel anytime.
           </p>
@@ -598,15 +613,25 @@ function App() {
               </div>
             ))}
           </div>
-          <button className="px-8 py-3 rounded-xl text-sm font-semibold transition-transform hover:scale-105"
-            style={{ backgroundColor: 'var(--accent-contrast)', color: 'var(--accent)' }}>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            className="px-8 py-3 rounded-xl text-sm font-semibold"
+            style={{ backgroundColor: 'var(--accent-contrast)', color: 'var(--accent)' }}
+          >
             Start your subscription
-          </button>
+          </motion.button>
         </div>
-      </section>
+      </motion.section>
 
-      {/* ── Yellow Feature Section 3: Quality Promise ── */}
-      <section ref={featureRef3} className="container-page py-12 reveal-scale">
+      {/* ── Quality Promise ── */}
+      <motion.section
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="container-page py-12"
+      >
         <div className="rounded-3xl overflow-hidden" style={{ backgroundColor: 'var(--accent)' }}>
           <div className="grid grid-cols-1 md:grid-cols-3">
             {[
@@ -614,7 +639,7 @@ function App() {
               { title: 'Quality guaranteed', desc: 'If your coffee doesn\'t meet your expectations, we\'ll replace it or refund your purchase.', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
               { title: 'Free shipping', desc: 'Complimentary shipping on all orders over $35. Delivered fresh to your doorstep.', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg> },
             ].map((item, i) => (
-              <div key={i} className="p-8 md:p-10" style={{ borderRight: i < 2 ? '1px solid rgba(28, 25, 23, 0.1)' : 'none', borderBottom: i < 2 ? '1px solid rgba(28, 25, 23, 0.1)' : 'none' }}>
+              <div key={i} className="p-8 md:p-10" style={{ borderRight: i < 2 ? '1px solid rgba(28, 25, 23, 0.1)' : 'none' }}>
                 <div className="mb-4" style={{ color: 'var(--accent-contrast)' }}>{item.icon}</div>
                 <h4 className="text-xl font-semibold mb-2" style={{ color: 'var(--accent-contrast)' }}>{item.title}</h4>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--accent-contrast)', opacity: 0.85 }}>{item.desc}</p>
@@ -622,7 +647,7 @@ function App() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── Footer ── */}
       <footer style={{ backgroundColor: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)' }}>
@@ -638,7 +663,7 @@ function App() {
               <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-muted)' }}>Shop</p>
               <ul className="space-y-2">
                 {['All coffee', 'Single origin', 'Blends', 'Subscriptions'].map(item => (
-                  <li key={item}><a href="#" className="text-sm transition-colors hover:underline" style={{ color: 'var(--text-secondary)' }}>{item}</a></li>
+                  <li key={item}><a href="#" className="text-sm hover:underline" style={{ color: 'var(--text-secondary)' }}>{item}</a></li>
                 ))}
               </ul>
             </div>
@@ -646,7 +671,7 @@ function App() {
               <p className="text-xs font-medium mb-3" style={{ color: 'var(--text-muted)' }}>Learn</p>
               <ul className="space-y-2">
                 {['Brewing guides', 'Our story', 'Sustainability', 'Wholesale'].map(item => (
-                  <li key={item}><a href="#" className="text-sm transition-colors hover:underline" style={{ color: 'var(--text-secondary)' }}>{item}</a></li>
+                  <li key={item}><a href="#" className="text-sm hover:underline" style={{ color: 'var(--text-secondary)' }}>{item}</a></li>
                 ))}
               </ul>
             </div>
@@ -662,15 +687,15 @@ function App() {
           <div className="mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>© 2026 Ember & Bloom. All rights reserved.</p>
             <div className="flex gap-4 text-xs">
-              <a href="#" className="transition-colors hover:underline" style={{ color: 'var(--text-muted)' }}>Privacy</a>
-              <a href="#" className="transition-colors hover:underline" style={{ color: 'var(--text-muted)' }}>Terms</a>
-              <a href="#" className="transition-colors hover:underline" style={{ color: 'var(--text-muted)' }}>Shipping</a>
+              <a href="#" className="hover:underline" style={{ color: 'var(--text-muted)' }}>Privacy</a>
+              <a href="#" className="hover:underline" style={{ color: 'var(--text-muted)' }}>Terms</a>
+              <a href="#" className="hover:underline" style={{ color: 'var(--text-muted)' }}>Shipping</a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* ── Modals ── */}
+      {/* Modals */}
       {selectedProduct && (
         <ProductDetail
           product={selectedProduct}
