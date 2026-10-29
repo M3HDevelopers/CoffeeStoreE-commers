@@ -246,13 +246,13 @@ function App() {
         {/* Content */}
         <div className="container-page relative z-10 py-20 md:py-32">
           <div className="max-w-3xl">
-            <p className="text-sm md:text-base mb-6 tracking-wide" style={{ color: 'var(--accent)', opacity: 0.9 }}>
+            <p className="text-sm md:text-base mb-6 uppercase tracking-widest" style={{ color: 'var(--accent)', opacity: 0.9, letterSpacing: '0.1em' }}>
               Roasted in small batches, shipped within 24 hours
             </p>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif leading-[1.1] tracking-tight mb-6" style={{ color: '#fafaf9' }}>
+            <h1 className="font-serif mb-6" style={{ color: '#fafaf9' }}>
               Coffee from the world's<br />most distinguished origins.
             </h1>
-            <p className="text-base md:text-lg max-w-2xl leading-relaxed mb-10" style={{ color: 'rgba(250, 250, 249, 0.8)' }}>
+            <p className="text-base md:text-lg mb-10" style={{ color: 'rgba(250, 250, 249, 0.8)', maxWidth: '65ch' }}>
               Single-origin beans sourced directly from farmers in Ethiopia, Colombia, Kenya, and Indonesia. Each lot is cupped, graded, and roasted to reveal its unique character.
             </p>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -310,10 +310,10 @@ function App() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h3 className="text-2xl md:text-3xl font-serif tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            <h2 className="font-serif" style={{ color: 'var(--text-primary)' }}>
               The collection
-            </h3>
-            <p className="text-sm mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+            </h2>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
               {filteredProducts.length} coffee{filteredProducts.length !== 1 ? 's' : ''} from our current roster
             </p>
           </div>
@@ -434,11 +434,11 @@ function App() {
         <div className="rounded-3xl p-8 md:p-12" style={{ backgroundColor: 'var(--accent)' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <p className="text-sm mb-3" style={{ color: 'var(--accent-contrast)', opacity: 0.8 }}>Why choose us</p>
-              <h3 className="text-3xl md:text-4xl font-serif tracking-tight mb-4" style={{ color: 'var(--accent-contrast)' }}>
+              <p className="text-xs mb-3 uppercase tracking-widest" style={{ color: 'var(--accent-contrast)', opacity: 0.8, letterSpacing: '0.1em' }}>Why choose us</p>
+              <h2 className="font-serif mb-4" style={{ color: 'var(--accent-contrast)' }}>
                 Coffee that tells a story
-              </h3>
-              <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--accent-contrast)', opacity: 0.9 }}>
+              </h2>
+              <p className="text-base md:text-lg mb-6" style={{ color: 'var(--accent-contrast)', opacity: 0.9, maxWidth: '65ch' }}>
                 Every bag of Ember & Bloom coffee carries the legacy of its origin. From the misty highlands of Ethiopia to the volcanic slopes of Indonesia, we source beans that embody the terroir and tradition of their homeland.
               </p>
               <div className="flex flex-wrap gap-3">
@@ -471,10 +471,10 @@ function App() {
         <div className="container-page">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
             <div>
-              <h3 className="text-2xl md:text-3xl font-serif tracking-tight mb-6" style={{ color: 'var(--text-primary)' }}>
+              <h2 className="font-serif mb-6" style={{ color: 'var(--text-primary)' }}>
                 Sourced from the coffee belt
-              </h3>
-              <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+              </h2>
+              <p className="text-base md:text-lg mb-6" style={{ color: 'var(--text-secondary)', maxWidth: '65ch' }}>
                 We work directly with farming cooperatives across the equatorial coffee belt — from the highlands of Ethiopia at 2,200 meters to the volcanic soils of Sumatra. Every origin brings distinct terroir to the cup.
               </p>
               <div className="space-y-4">
@@ -512,9 +512,9 @@ function App() {
 
       {/* ── Brewing Guide ── */}
       <section className="container-page py-16 md:py-24">
-        <h3 className="text-2xl md:text-3xl font-serif tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>
+        <h2 className="font-serif mb-2" style={{ color: 'var(--text-primary)' }}>
           Brewing reference
-        </h3>
+        </h2>
         <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
           Recommended parameters for each method. Adjust to taste.
         </p>
@@ -571,11 +571,11 @@ function App() {
       {/* ── Yellow Feature Section 2: Subscription CTA ── */}
       <section className="container-page py-12">
         <div className="rounded-3xl p-8 md:p-16 text-center" style={{ backgroundColor: 'var(--accent)' }}>
-          <p className="text-sm mb-3" style={{ color: 'var(--accent-contrast)', opacity: 0.8 }}>Never run out</p>
-          <h3 className="text-3xl md:text-5xl font-serif tracking-tight mb-4" style={{ color: 'var(--accent-contrast)' }}>
+          <p className="text-xs mb-3 uppercase tracking-widest" style={{ color: 'var(--accent-contrast)', opacity: 0.8, letterSpacing: '0.1em' }}>Never run out</p>
+          <h2 className="font-serif mb-4" style={{ color: 'var(--accent-contrast)' }}>
             Subscribe and save 15%
-          </h3>
-          <p className="text-base md:text-lg leading-relaxed mb-8 max-w-2xl mx-auto" style={{ color: 'var(--accent-contrast)', opacity: 0.9 }}>
+          </h2>
+          <p className="text-base md:text-lg mb-8 mx-auto" style={{ color: 'var(--accent-contrast)', opacity: 0.9, maxWidth: '65ch' }}>
             Fresh coffee delivered to your door on your schedule. Choose weekly, biweekly, or monthly. Pause or cancel anytime.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8">
