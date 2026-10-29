@@ -229,7 +229,7 @@ function App() {
       </header>
 
       {/* ── Hero Section ── */}
-      <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pt-16 md:pt-18">
+      <section className="relative min-h-[700px] md:min-h-screen flex items-center overflow-hidden pt-16 md:pt-18">
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
