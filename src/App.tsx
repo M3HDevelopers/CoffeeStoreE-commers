@@ -207,67 +207,61 @@ function App() {
         </div>
       </header>
 
-      {/* ── Hero: Asymmetric Bento ── */}
-      <section className="container-page pt-12 md:pt-20 pb-12 md:pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
-          {/* Main Feature — Span 8 */}
-          <div className="md:col-span-8 rounded-2xl p-8 md:p-12 flex flex-col justify-between min-h-[380px] relative overflow-hidden"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-            <div>
-              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                Roasted in small batches, shipped within 24 hours of roasting.
-              </p>
-              <h2 className="text-3xl md:text-5xl font-serif leading-tight tracking-tight mb-4" style={{ color: 'var(--text-primary)' }}>
-                Coffee from the world's<br />most distinguished origins.
-              </h2>
-              <p className="text-base max-w-md leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Single-origin beans sourced directly from farmers in Ethiopia, Colombia, Kenya, and Indonesia. Each lot is cupped, graded, and roasted to reveal its unique character.
-              </p>
-            </div>
-            <div className="mt-8 flex items-center gap-4">
-              <a href="#collection" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+      {/* ── Hero Section ── */}
+      <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <img
+            src="https://image.qwenlm.ai/generated-images/e24d72ce-5766-47d8-8942-3fcc48965727/_result.png"
+            alt="Freshly roasted coffee beans"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark Overlay */}
+          <div className="absolute inset-0" style={{
+            background: 'linear-gradient(135deg, rgba(12, 10, 9, 0.85) 0%, rgba(12, 10, 9, 0.7) 50%, rgba(12, 10, 9, 0.85) 100%)'
+          }} />
+        </div>
+
+        {/* Content */}
+        <div className="container-page relative z-10 py-20 md:py-32">
+          <div className="max-w-3xl">
+            <p className="text-sm md:text-base mb-6 tracking-wide" style={{ color: 'var(--accent)', opacity: 0.9 }}>
+              Roasted in small batches, shipped within 24 hours
+            </p>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif leading-[1.1] tracking-tight mb-6" style={{ color: '#fafaf9' }}>
+              Coffee from the world's<br />most distinguished origins.
+            </h1>
+            <p className="text-base md:text-lg max-w-2xl leading-relaxed mb-10" style={{ color: 'rgba(250, 250, 249, 0.8)' }}>
+              Single-origin beans sourced directly from farmers in Ethiopia, Colombia, Kenya, and Indonesia. Each lot is cupped, graded, and roasted to reveal its unique character.
+            </p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <a href="#collection" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all hover:scale-105"
                 style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>
                 Shop collection
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </a>
-              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>6 origins available</span>
+              <span className="text-sm" style={{ color: 'rgba(250, 250, 249, 0.6)' }}>10 origins available</span>
             </div>
           </div>
+        </div>
 
-          {/* Featured Product — Span 4 */}
-          <div className="md:col-span-4 rounded-2xl overflow-hidden relative group cursor-pointer"
-            style={{ border: '1px solid var(--border-subtle)' }}
-            onClick={() => viewProduct(featuredProduct)}>
-            <img src={featuredProduct.image} alt={featuredProduct.name} className="w-full h-full min-h-[380px] object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>Featured origin</p>
-              <h3 className="text-lg font-semibold text-white mb-1">{featuredProduct.name}</h3>
-              <div className="flex items-center justify-between">
-                <span className="text-sm tabular-nums" style={{ color: 'rgba(255,255,255,0.8)' }}>${featuredProduct.price.toFixed(2)}</span>
-                <span className="text-xs px-2 py-1 rounded bg-white/20 text-white backdrop-blur-sm">{featuredProduct.roast}</span>
+        {/* Stats Bar */}
+        <div className="absolute bottom-0 left-0 right-0" style={{ backgroundColor: 'rgba(12, 10, 9, 0.6)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(250, 250, 249, 0.1)' }}>
+          <div className="container-page">
+            <div className="grid grid-cols-3 gap-4 py-6">
+              <div>
+                <p className="text-xs mb-1" style={{ color: 'rgba(250, 250, 249, 0.6)' }}>Direct trade partners</p>
+                <p className="text-2xl md:text-3xl font-semibold tabular-nums" style={{ color: '#fafaf9' }}>47</p>
+              </div>
+              <div>
+                <p className="text-xs mb-1" style={{ color: 'rgba(250, 250, 249, 0.6)' }}>Average cupping score</p>
+                <p className="text-2xl md:text-3xl font-semibold tabular-nums" style={{ color: '#fafaf9' }}>87.4</p>
+              </div>
+              <div>
+                <p className="text-xs mb-1" style={{ color: 'rgba(250, 250, 249, 0.6)' }}>Roast to ship</p>
+                <p className="text-2xl md:text-3xl font-semibold tabular-nums" style={{ color: '#fafaf9' }}>&lt;24h</p>
               </div>
             </div>
-          </div>
-
-          {/* Stats Row — Span 4 + 4 + 4 */}
-          <div className="md:col-span-4 rounded-xl p-5 flex flex-col justify-between"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Direct trade partners</p>
-            <p className="text-3xl font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>47</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Farms across 6 countries</p>
-          </div>
-          <div className="md:col-span-4 rounded-xl p-5 flex flex-col justify-between"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Average cupping score</p>
-            <p className="text-3xl font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>87.4</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>SCA specialty grade (80+)</p>
-          </div>
-          <div className="md:col-span-4 rounded-xl p-5 flex flex-col justify-between"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Roast to ship</p>
-            <p className="text-3xl font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>&lt;24h</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Peak freshness guaranteed</p>
           </div>
         </div>
       </section>
