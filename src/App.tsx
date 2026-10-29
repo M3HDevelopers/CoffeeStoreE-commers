@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { products, categories, roastLevels, sortOptions, Product } from './data/products';
 import { CartItem, WishlistItem } from './types/cart';
 import ProductCard from './components/ProductCard';
@@ -18,24 +18,7 @@ function App() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-  const [isDark, setIsDark] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
-  useEffect(() => {
-    const saved = localStorage.getItem('ember-theme');
-    if (saved === 'dark') {
-      setIsDark(true);
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setIsDark(prev => {
-      const next = !prev;
-      document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-      localStorage.setItem('ember-theme', next ? 'dark' : 'light');
-      return next;
-    });
-  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = products.filter(product => {
@@ -165,19 +148,7 @@ function App() {
 
             {/* Actions */}
             <div className="flex items-center gap-1">
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
-                style={{ color: 'var(--text-secondary)' }}
-                aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-              >
-                {isDark ? (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                )}
-              </button>
+
 
               {/* Wishlist */}
               <button
@@ -425,6 +396,61 @@ function App() {
         )}
       </section>
 
+      {/* ── Marquee Section ── */}
+      <section className="py-8 overflow-hidden" style={{ backgroundColor: 'var(--accent)' }}>
+        <div className="marquee-track">
+          {[...Array(2)].map((_, setIndex) => (
+            <div key={setIndex} className="flex items-center gap-8 px-4">
+              {['Single Origin', 'Ethically Sourced', 'Freshly Roasted', 'Free Shipping $35+', 'Small Batch', 'Direct Trade', 'Specialty Grade', 'Peak Freshness', 'Artisan Blends', 'Subscribe & Save'].map((text, i) => (
+                <React.Fragment key={i}>
+                  <span className="text-lg md:text-xl font-semibold whitespace-nowrap" style={{ color: 'var(--accent-contrast)' }}>
+                    {text}
+                  </span>
+                  <span className="text-2xl" style={{ color: 'var(--accent-contrast)' }}>•</span>
+                </React.Fragment>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Yellow Feature Section 1 ── */}
+      <section className="container-page py-12">
+        <div className="rounded-3xl p-8 md:p-12" style={{ backgroundColor: 'var(--accent)' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-sm mb-3" style={{ color: 'var(--accent-contrast)', opacity: 0.8 }}>Why choose us</p>
+              <h3 className="text-3xl md:text-4xl font-serif tracking-tight mb-4" style={{ color: 'var(--accent-contrast)' }}>
+                Coffee that tells a story
+              </h3>
+              <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--accent-contrast)', opacity: 0.9 }}>
+                Every bag of Ember & Bloom coffee carries the legacy of its origin. From the misty highlands of Ethiopia to the volcanic slopes of Indonesia, we source beans that embody the terroir and tradition of their homeland.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {['Direct Trade', 'Organic', 'Fair Wage'].map(tag => (
+                  <span key={tag} className="px-4 py-2 rounded-full text-sm font-medium" style={{ backgroundColor: 'var(--accent-contrast)', color: 'var(--accent)' }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { number: '47', label: 'Farm partners' },
+                { number: '6', label: 'Countries' },
+                { number: '87.4', label: 'Avg cupping score' },
+                { number: '<24h', label: 'Roast to ship' },
+              ].map((stat, i) => (
+                <div key={i} className="rounded-xl p-5" style={{ backgroundColor: 'var(--accent-contrast)', color: 'var(--accent)' }}>
+                  <p className="text-3xl font-bold tabular-nums mb-1">{stat.number}</p>
+                  <p className="text-xs opacity-80">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Origin Map Section ── */}
       <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--bg-surface)' }}>
         <div className="container-page">
@@ -506,6 +532,67 @@ function App() {
               </dl>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Yellow Feature Section 2: Subscription CTA ── */}
+      <section className="container-page py-12">
+        <div className="rounded-3xl p-8 md:p-16 text-center" style={{ backgroundColor: 'var(--accent)' }}>
+          <p className="text-sm mb-3" style={{ color: 'var(--accent-contrast)', opacity: 0.8 }}>Never run out</p>
+          <h3 className="text-3xl md:text-5xl font-serif tracking-tight mb-4" style={{ color: 'var(--accent-contrast)' }}>
+            Subscribe and save 15%
+          </h3>
+          <p className="text-base md:text-lg leading-relaxed mb-8 max-w-2xl mx-auto" style={{ color: 'var(--accent-contrast)', opacity: 0.9 }}>
+            Fresh coffee delivered to your door on your schedule. Choose weekly, biweekly, or monthly. Pause or cancel anytime.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8">
+            {['Weekly', 'Biweekly', 'Monthly'].map(freq => (
+              <div key={freq} className="px-6 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: 'var(--accent-contrast)', color: 'var(--accent)' }}>
+                {freq}
+              </div>
+            ))}
+          </div>
+          <button className="px-8 py-3 rounded-xl text-sm font-semibold transition-transform hover:scale-105"
+            style={{ backgroundColor: 'var(--accent-contrast)', color: 'var(--accent)' }}>
+            Start your subscription
+          </button>
+        </div>
+      </section>
+
+      {/* ── Marquee Section 2: Reverse Direction ── */}
+      <section className="py-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
+        <div className="marquee-track" style={{ animationDirection: 'reverse', animationDuration: '35s' }}>
+          {[...Array(2)].map((_, setIndex) => (
+            <div key={setIndex} className="flex items-center gap-6 px-4">
+              {['Ethiopia', 'Colombia', 'Kenya', 'Indonesia', 'Brazil', 'Guatemala', 'Costa Rica', 'Sumatra', 'Yirgacheffe', 'Huila', 'Nyeri', 'Mandheling'].map((origin, i) => (
+                <React.Fragment key={i}>
+                  <span className="text-base md:text-lg font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                    {origin}
+                  </span>
+                  <span className="text-lg" style={{ color: 'var(--accent)' }}>◆</span>
+                </React.Fragment>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Yellow Feature Section 3: Quality Promise ── */}
+      <section className="container-page py-12">
+        <div className="rounded-3xl overflow-hidden" style={{ backgroundColor: 'var(--accent)' }}>
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {[
+              { title: 'Roasted to order', desc: 'Every batch is roasted within 24 hours of your order, ensuring peak flavor and aroma.', icon: '🔥' },
+              { title: 'Quality guaranteed', desc: 'If your coffee doesn\'t meet your expectations, we\'ll replace it or refund your purchase.', icon: '✓' },
+              { title: 'Free shipping', desc: 'Complimentary shipping on all orders over $35. Delivered fresh to your doorstep.', icon: '→' },
+            ].map((item, i) => (
+              <div key={i} className="p-8 md:p-10" style={{ borderRight: i < 2 ? '1px solid rgba(28, 25, 23, 0.1)' : 'none', borderBottom: i < 2 ? '1px solid rgba(28, 25, 23, 0.1)' : 'none' }}>
+                <div className="text-3xl mb-4">{item.icon}</div>
+                <h4 className="text-xl font-semibold mb-2" style={{ color: 'var(--accent-contrast)' }}>{item.title}</h4>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--accent-contrast)', opacity: 0.85 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
