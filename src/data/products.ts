@@ -10,6 +10,14 @@ export interface Product {
   weight: string;
   image: string;
   rating: number;
+  reviews: number;
+  inStock: boolean;
+  bestSeller?: boolean;
+  newArrival?: boolean;
+  brewingMethods: string[];
+  intensity: number;
+  acidity: number;
+  body: number;
 }
 
 export const products: Product[] = [
@@ -23,8 +31,15 @@ export const products: Product[] = [
     notes: ["Blueberry", "Jasmine", "Lemon Zest"],
     roast: "Light",
     weight: "250g",
-    image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=400&fit=crop",
-    rating: 4.9
+    image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=600&fit=crop",
+    rating: 4.9,
+    reviews: 234,
+    inStock: true,
+    bestSeller: true,
+    brewingMethods: ["Pour Over", "AeroPress", "Chemex"],
+    intensity: 3,
+    acidity: 5,
+    body: 3
   },
   {
     id: 2,
@@ -36,8 +51,14 @@ export const products: Product[] = [
     notes: ["Caramel", "Red Apple", "Milk Chocolate"],
     roast: "Medium",
     weight: "250g",
-    image: "https://images.unsplash.com/photo-1587734195503-904fca47e0e9?w=400&h=400&fit=crop",
-    rating: 4.7
+    image: "https://images.unsplash.com/photo-1587734195503-904fca47e0e9?w=600&h=600&fit=crop",
+    rating: 4.7,
+    reviews: 189,
+    inStock: true,
+    brewingMethods: ["Drip", "French Press", "Pour Over"],
+    intensity: 3,
+    acidity: 3,
+    body: 4
   },
   {
     id: 3,
@@ -49,8 +70,14 @@ export const products: Product[] = [
     notes: ["Dark Chocolate", "Cedar", "Tobacco"],
     roast: "Dark",
     weight: "250g",
-    image: "https://images.unsplash.com/photo-1611854779393-1b2da9d400fe?w=400&h=400&fit=crop",
-    rating: 4.6
+    image: "https://images.unsplash.com/photo-1611854779393-1b2da9d400fe?w=600&h=600&fit=crop",
+    rating: 4.6,
+    reviews: 156,
+    inStock: true,
+    brewingMethods: ["Espresso", "Moka Pot", "French Press"],
+    intensity: 5,
+    acidity: 2,
+    body: 5
   },
   {
     id: 4,
@@ -62,8 +89,15 @@ export const products: Product[] = [
     notes: ["Blackcurrant", "Grapefruit", "Brown Sugar"],
     roast: "Light-Medium",
     weight: "250g",
-    image: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=400&h=400&fit=crop",
-    rating: 4.8
+    image: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=600&h=600&fit=crop",
+    rating: 4.8,
+    reviews: 201,
+    inStock: true,
+    newArrival: true,
+    brewingMethods: ["Pour Over", "Chemex", "AeroPress"],
+    intensity: 4,
+    acidity: 5,
+    body: 3
   },
   {
     id: 5,
@@ -75,8 +109,15 @@ export const products: Product[] = [
     notes: ["Hazelnut", "Honey", "Vanilla"],
     roast: "Medium",
     weight: "250g",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=400&h=400&fit=crop",
-    rating: 4.5
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=600&h=600&fit=crop",
+    rating: 4.5,
+    reviews: 312,
+    inStock: true,
+    bestSeller: true,
+    brewingMethods: ["Drip", "French Press", "Espresso"],
+    intensity: 3,
+    acidity: 2,
+    body: 3
   },
   {
     id: 6,
@@ -88,9 +129,24 @@ export const products: Product[] = [
     notes: ["Earthy", "Dark Cocoa", "Herbal"],
     roast: "Dark",
     weight: "250g",
-    image: "https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=400&h=400&fit=crop",
-    rating: 4.4
+    image: "https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=600&h=600&fit=crop",
+    rating: 4.4,
+    reviews: 143,
+    inStock: true,
+    brewingMethods: ["French Press", "Moka Pot", "Cold Brew"],
+    intensity: 5,
+    acidity: 1,
+    body: 5
   }
 ];
 
 export const categories = ["All", "Single Origin", "Blend"];
+export const roastLevels = ["All", "Light", "Light-Medium", "Medium", "Dark"];
+export const sortOptions = [
+  { value: "featured", label: "Featured" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "price-high", label: "Price: High to Low" },
+  { value: "rating", label: "Highest Rated" },
+  { value: "name", label: "Name A-Z" },
+  { value: "newest", label: "Newest First" }
+];

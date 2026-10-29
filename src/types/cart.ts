@@ -5,7 +5,12 @@ export interface CartItem {
   quantity: number;
 }
 
-export interface CartState {
-  items: CartItem[];
-  isOpen: boolean;
+export interface WishlistItem {
+  product: Product;
+  addedAt: number;
+}
+
+export interface RecentlyViewed {
+  product: Product;
+  viewedAt: number;
 }
