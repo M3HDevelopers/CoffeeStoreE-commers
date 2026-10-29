@@ -5,6 +5,7 @@ import ProductCard from './components/ProductCard';
 import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
+import { useScrollReveal, useParallax } from './hooks/useScrollReveal';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,6 +21,16 @@ function App() {
   const [notification, setNotification] = useState<string | null>(null);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const [scrolled, setScrolled] = useState(false);
+
+  // Scroll reveal refs
+  const collectionRef = useScrollReveal(0.1);
+  const featureRef1 = useScrollReveal(0.15);
+  const originRef = useScrollReveal(0.15);
+  const brewingRef = useScrollReveal(0.15);
+  const featureRef2 = useScrollReveal(0.15);
+  const featureRef3 = useScrollReveal(0.15);
+  const productGridRef = useScrollReveal(0.05);
+  const heroParallaxRef = useParallax(0.4);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -230,13 +241,15 @@ function App() {
 
       {/* ── Hero Section ── */}
       <section className="relative min-h-[700px] md:min-h-screen flex items-center overflow-hidden pt-16 md:pt-18">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img
-            src="https://image.qwenlm.ai/generated-images/e24d72ce-5766-47d8-8942-3fcc48965727/_result.png"
-            alt="Freshly roasted coffee beans"
-            className="w-full h-full object-cover"
-          />
+        {/* Background Image with Parallax */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div ref={heroParallaxRef} className="parallax-slow absolute inset-0 scale-110">
+            <img
+              src="https://image.qwenlm.ai/generated-images/e24d72ce-5766-47d8-8942-3fcc48965727/_result.png"
+              alt="Freshly roasted coffee beans"
+              className="w-full h-full object-cover"
+            />
+          </div>
           {/* Dark Overlay */}
           <div className="absolute inset-0" style={{
             background: 'linear-gradient(135deg, rgba(12, 10, 9, 0.85) 0%, rgba(12, 10, 9, 0.7) 50%, rgba(12, 10, 9, 0.85) 100%)'
@@ -246,17 +259,17 @@ function App() {
         {/* Content */}
         <div className="container-page relative z-10 py-20 md:py-32">
           <div className="max-w-3xl">
-            <p className="text-sm md:text-base mb-6 uppercase tracking-widest" style={{ color: 'var(--accent)', opacity: 0.9, letterSpacing: '0.1em' }}>
+            <p className="text-sm md:text-base mb-6 uppercase tracking-widest hero-animate hero-animate-delay-1" style={{ color: 'var(--accent)', opacity: 0.9, letterSpacing: '0.1em' }}>
               Roasted in small batches, shipped within 24 hours
             </p>
-            <h1 className="font-serif mb-6" style={{ color: '#fafaf9' }}>
+            <h1 className="font-serif mb-6 hero-animate hero-animate-delay-2" style={{ color: '#fafaf9' }}>
               Coffee from the world's<br />most distinguished origins.
             </h1>
-            <p className="text-base md:text-lg mb-10" style={{ color: 'rgba(250, 250, 249, 0.8)', maxWidth: '65ch' }}>
+            <p className="text-base md:text-lg mb-10 hero-animate hero-animate-delay-3" style={{ color: 'rgba(250, 250, 249, 0.8)', maxWidth: '65ch' }}>
               Single-origin beans sourced directly from farmers in Ethiopia, Colombia, Kenya, and Indonesia. Each lot is cupped, graded, and roasted to reveal its unique character.
             </p>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <a href="#collection" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all hover:scale-105"
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 hero-animate hero-animate-delay-4">
+              <a href="#collection" className="magnetic-btn inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all hover:scale-105"
                 style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>
                 Shop collection
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -269,7 +282,7 @@ function App() {
         {/* Stats Bar */}
         <div className="absolute bottom-0 left-0 right-0" style={{ backgroundColor: 'rgba(12, 10, 9, 0.6)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(250, 250, 249, 0.1)' }}>
           <div className="container-page">
-            <div className="grid grid-cols-3 gap-4 py-6">
+            <div className="grid grid-cols-3 gap-4 py-6 stagger-children visible">
               <div>
                 <p className="text-xs mb-1" style={{ color: 'rgba(250, 250, 249, 0.6)' }}>Direct trade partners</p>
                 <p className="text-2xl md:text-3xl font-semibold tabular-nums" style={{ color: '#fafaf9' }}>47</p>
@@ -306,7 +319,7 @@ function App() {
       </section>
 
       {/* ── Collection ── */}
-      <section id="collection" className="container-page pt-12 pb-16">
+      <section id="collection" ref={collectionRef} className="container-page pt-12 pb-16 reveal">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
@@ -386,7 +399,7 @@ function App() {
 
         {/* Product Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div ref={productGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
             {filteredProducts.map(product => (
               <ProductCard
                 key={product.id}
@@ -430,7 +443,7 @@ function App() {
       </section>
 
       {/* ── Yellow Feature Section 1 ── */}
-      <section className="container-page py-12">
+      <section ref={featureRef1} className="container-page py-12 reveal-scale">
         <div className="rounded-3xl p-8 md:p-12" style={{ backgroundColor: 'var(--accent)' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
@@ -467,10 +480,10 @@ function App() {
       </section>
 
       {/* ── Origin Map Section ── */}
-      <section className="py-16 md:py-24" style={{ backgroundColor: 'var(--bg-surface)' }}>
+      <section ref={originRef} className="py-16 md:py-24 reveal" style={{ backgroundColor: 'var(--bg-surface)' }}>
         <div className="container-page">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
-            <div>
+            <div className="reveal-left">
               <h2 className="font-serif mb-6" style={{ color: 'var(--text-primary)' }}>
                 Sourced from the coffee belt
               </h2>
@@ -511,14 +524,14 @@ function App() {
       </section>
 
       {/* ── Brewing Guide ── */}
-      <section className="container-page py-16 md:py-24">
+      <section ref={brewingRef} className="container-page py-16 md:py-24 reveal">
         <h2 className="font-serif mb-2" style={{ color: 'var(--text-primary)' }}>
           Brewing reference
         </h2>
         <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
           Recommended parameters for each method. Adjust to taste.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
           {[
             { method: 'Pour over', time: '3–4 min', ratio: '1:16', temp: '96°C', grind: 'Medium-fine' },
             { method: 'French press', time: '4 min', ratio: '1:15', temp: '93°C', grind: 'Coarse' },
@@ -569,7 +582,7 @@ function App() {
       </section>
 
       {/* ── Yellow Feature Section 2: Subscription CTA ── */}
-      <section className="container-page py-12">
+      <section ref={featureRef2} className="container-page py-12 reveal-scale">
         <div className="rounded-3xl p-8 md:p-16 text-center" style={{ backgroundColor: 'var(--accent)' }}>
           <p className="text-xs mb-3 uppercase tracking-widest" style={{ color: 'var(--accent-contrast)', opacity: 0.8, letterSpacing: '0.1em' }}>Never run out</p>
           <h2 className="font-serif mb-4" style={{ color: 'var(--accent-contrast)' }}>
@@ -593,7 +606,7 @@ function App() {
       </section>
 
       {/* ── Yellow Feature Section 3: Quality Promise ── */}
-      <section className="container-page py-12">
+      <section ref={featureRef3} className="container-page py-12 reveal-scale">
         <div className="rounded-3xl overflow-hidden" style={{ backgroundColor: 'var(--accent)' }}>
           <div className="grid grid-cols-1 md:grid-cols-3">
             {[

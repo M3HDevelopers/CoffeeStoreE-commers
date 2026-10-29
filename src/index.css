@@ -300,6 +300,186 @@ a:focus-visible {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   MOTION SYSTEM — Animation Tokens & Scroll Reveals
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Easing Curves */
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-in-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-bounce-settle: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Duration Tokens */
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-normal: 280ms;
+  --duration-slow: 400ms;
+  --duration-cinematic: 800ms;
+}
+
+/* ── Scroll Reveal System ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity var(--duration-slow) var(--ease-out-emphasized),
+              transform var(--duration-slow) var(--ease-out-emphasized);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity var(--duration-slow) var(--ease-out-emphasized),
+              transform var(--duration-slow) var(--ease-out-emphasized);
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity var(--duration-slow) var(--ease-out-emphasized),
+              transform var(--duration-slow) var(--ease-out-emphasized);
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity var(--duration-slow) var(--ease-out-emphasized),
+              transform var(--duration-slow) var(--ease-out-emphasized);
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Stagger Children ── */
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--duration-normal) var(--ease-out-emphasized),
+              transform var(--duration-normal) var(--ease-out-emphasized);
+}
+
+.stagger-children.visible > *:nth-child(1) { transition-delay: 0ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(2) { transition-delay: 60ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(3) { transition-delay: 120ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(4) { transition-delay: 180ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(5) { transition-delay: 240ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(6) { transition-delay: 300ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(7) { transition-delay: 360ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(8) { transition-delay: 420ms; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(9) { transition-delay: 480ms; opacity: 1; transform: translateY(0); }
+
+/* ── Hero Theatrical Entrance ── */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hero-animate {
+  animation: heroFadeUp var(--duration-cinematic) var(--ease-out-emphasized) forwards;
+  opacity: 0;
+}
+
+.hero-animate-delay-1 { animation-delay: 200ms; }
+.hero-animate-delay-2 { animation-delay: 400ms; }
+.hero-animate-delay-3 { animation-delay: 600ms; }
+.hero-animate-delay-4 { animation-delay: 800ms; }
+
+/* ── Image Reveal on Scroll ── */
+.image-reveal {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1s var(--ease-out-emphasized);
+}
+
+.image-reveal.visible {
+  clip-path: inset(0 0 0% 0);
+}
+
+/* ── Parallax Layer ── */
+.parallax-slow {
+  will-change: transform;
+}
+
+/* ── Card Hover Tilt ── */
+.tilt-card {
+  transition: transform var(--duration-normal) var(--ease-apple);
+  transform-style: preserve-3d;
+}
+
+.tilt-card:hover {
+  transform: perspective(1000px) rotateY(-2deg) rotateX(1deg) scale(1.02);
+}
+
+/* ── Button Magnetic Press ── */
+.magnetic-btn {
+  transition: transform var(--duration-fast) var(--ease-apple);
+}
+
+.magnetic-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── Stats Counter Pulse ── */
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.pulse-subtle {
+  animation: subtlePulse 3s ease-in-out infinite;
+}
+
+/* ── Accessibility: Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale,
+  .stagger-children > *,
+  .image-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  .hero-animate {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+
 /* ── Marquee Scroll ── */
 @keyframes marquee {
   0% { transform: translateX(0); }
