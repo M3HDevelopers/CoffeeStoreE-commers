@@ -272,6 +272,24 @@ function App() {
         </div>
       </section>
 
+      {/* ── Marquee Section ── */}
+      <section className="py-8 overflow-hidden" style={{ backgroundColor: 'var(--accent)' }}>
+        <div className="marquee-track">
+          {[...Array(2)].map((_, setIndex) => (
+            <div key={setIndex} className="flex items-center gap-8 px-4">
+              {['Single Origin', 'Ethically Sourced', 'Freshly Roasted', 'Free Shipping $35+', 'Small Batch', 'Direct Trade', 'Specialty Grade', 'Peak Freshness', 'Artisan Blends', 'Subscribe & Save'].map((text, i) => (
+                <React.Fragment key={i}>
+                  <span className="text-lg md:text-xl font-semibold whitespace-nowrap" style={{ color: 'var(--accent-contrast)' }}>
+                    {text}
+                  </span>
+                  <span className="text-2xl" style={{ color: 'var(--accent-contrast)' }}>•</span>
+                </React.Fragment>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── Collection ── */}
       <section id="collection" className="container-page pb-16">
         {/* Section Header */}
@@ -394,24 +412,6 @@ function App() {
             </div>
           </div>
         )}
-      </section>
-
-      {/* ── Marquee Section ── */}
-      <section className="py-8 overflow-hidden" style={{ backgroundColor: 'var(--accent)' }}>
-        <div className="marquee-track">
-          {[...Array(2)].map((_, setIndex) => (
-            <div key={setIndex} className="flex items-center gap-8 px-4">
-              {['Single Origin', 'Ethically Sourced', 'Freshly Roasted', 'Free Shipping $35+', 'Small Batch', 'Direct Trade', 'Specialty Grade', 'Peak Freshness', 'Artisan Blends', 'Subscribe & Save'].map((text, i) => (
-                <React.Fragment key={i}>
-                  <span className="text-lg md:text-xl font-semibold whitespace-nowrap" style={{ color: 'var(--accent-contrast)' }}>
-                    {text}
-                  </span>
-                  <span className="text-2xl" style={{ color: 'var(--accent-contrast)' }}>•</span>
-                </React.Fragment>
-              ))}
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* ── Yellow Feature Section 1 ── */}
@@ -582,12 +582,12 @@ function App() {
         <div className="rounded-3xl overflow-hidden" style={{ backgroundColor: 'var(--accent)' }}>
           <div className="grid grid-cols-1 md:grid-cols-3">
             {[
-              { title: 'Roasted to order', desc: 'Every batch is roasted within 24 hours of your order, ensuring peak flavor and aroma.', icon: '🔥' },
-              { title: 'Quality guaranteed', desc: 'If your coffee doesn\'t meet your expectations, we\'ll replace it or refund your purchase.', icon: '✓' },
-              { title: 'Free shipping', desc: 'Complimentary shipping on all orders over $35. Delivered fresh to your doorstep.', icon: '→' },
+              { title: 'Roasted to order', desc: 'Every batch is roasted within 24 hours of your order, ensuring peak flavor and aroma.', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /></svg> },
+              { title: 'Quality guaranteed', desc: 'If your coffee doesn\'t meet your expectations, we\'ll replace it or refund your purchase.', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+              { title: 'Free shipping', desc: 'Complimentary shipping on all orders over $35. Delivered fresh to your doorstep.', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg> },
             ].map((item, i) => (
               <div key={i} className="p-8 md:p-10" style={{ borderRight: i < 2 ? '1px solid rgba(28, 25, 23, 0.1)' : 'none', borderBottom: i < 2 ? '1px solid rgba(28, 25, 23, 0.1)' : 'none' }}>
-                <div className="text-3xl mb-4">{item.icon}</div>
+                <div className="mb-4" style={{ color: 'var(--accent-contrast)' }}>{item.icon}</div>
                 <h4 className="text-xl font-semibold mb-2" style={{ color: 'var(--accent-contrast)' }}>{item.title}</h4>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--accent-contrast)', opacity: 0.85 }}>{item.desc}</p>
               </div>
