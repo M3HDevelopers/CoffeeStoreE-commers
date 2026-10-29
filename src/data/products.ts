@@ -187,7 +187,7 @@ export const products: Product[] = [
     notes: ["Chocolate", "Citrus", "Caramel"],
     roast: "Medium",
     weight: "250g",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=600&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&h=600&fit=crop",
     rating: 4.8,
     reviews: 267,
     inStock: true,

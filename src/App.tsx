@@ -291,7 +291,7 @@ function App() {
       </section>
 
       {/* ── Collection ── */}
-      <section id="collection" className="container-page pb-16">
+      <section id="collection" className="container-page pt-12 pb-16">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
@@ -495,6 +495,24 @@ function App() {
         </div>
       </section>
 
+      {/* ── Marquee Section 2: Reverse Direction ── */}
+      <section className="py-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
+        <div className="marquee-track" style={{ animationDirection: 'reverse', animationDuration: '35s' }}>
+          {[...Array(2)].map((_, setIndex) => (
+            <div key={setIndex} className="flex items-center gap-6 px-4">
+              {['Ethiopia', 'Colombia', 'Kenya', 'Indonesia', 'Brazil', 'Guatemala', 'Costa Rica', 'Sumatra', 'Yirgacheffe', 'Huila', 'Nyeri', 'Mandheling'].map((origin, i) => (
+                <React.Fragment key={i}>
+                  <span className="text-base md:text-lg font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                    {origin}
+                  </span>
+                  <span className="text-lg" style={{ color: 'var(--accent)' }}>◆</span>
+                </React.Fragment>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── Brewing Guide ── */}
       <section className="container-page py-16 md:py-24">
         <h3 className="text-2xl md:text-3xl font-serif tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -556,24 +574,6 @@ function App() {
             style={{ backgroundColor: 'var(--accent-contrast)', color: 'var(--accent)' }}>
             Start your subscription
           </button>
-        </div>
-      </section>
-
-      {/* ── Marquee Section 2: Reverse Direction ── */}
-      <section className="py-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
-        <div className="marquee-track" style={{ animationDirection: 'reverse', animationDuration: '35s' }}>
-          {[...Array(2)].map((_, setIndex) => (
-            <div key={setIndex} className="flex items-center gap-6 px-4">
-              {['Ethiopia', 'Colombia', 'Kenya', 'Indonesia', 'Brazil', 'Guatemala', 'Costa Rica', 'Sumatra', 'Yirgacheffe', 'Huila', 'Nyeri', 'Mandheling'].map((origin, i) => (
-                <React.Fragment key={i}>
-                  <span className="text-base md:text-lg font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                    {origin}
-                  </span>
-                  <span className="text-lg" style={{ color: 'var(--accent)' }}>◆</span>
-                </React.Fragment>
-              ))}
-            </div>
-          ))}
         </div>
       </section>
 
